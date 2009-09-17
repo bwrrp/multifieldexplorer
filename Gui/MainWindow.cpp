@@ -3,19 +3,22 @@
 #include "MainWindow.h"
 #include "MainWindow.moc"
 
-#include <QApplication>
+#include "Data/VectorField.h"
 
-#include <NQVTK/Rendering/SimpleRenderer.h>
+#include <NQVTK/Rendering/Renderer.h>
+#include <NQVTK/Rendering/Scene.h>
+
+#include <NQVTK/Renderables/Renderable.h>
+
+#include <QApplication>
+#include <QFileDialog>
 
 namespace VFE
 {
 	// ------------------------------------------------------------------------
-	MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
+	MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), field(0)
 	{
 		ui.setupUi(this);
-
-		ui.mainViewer->SetRenderer(new NQVTK::SimpleRenderer());
-		ui.sliceViewer->SetRenderer(new NQVTK::SimpleRenderer());
 	}
 
 	// ------------------------------------------------------------------------
@@ -24,9 +27,36 @@ namespace VFE
 	}
 
 	// ------------------------------------------------------------------------
+	void MainWindow::LoadField(const QString &filename)
+	{
+		VectorField *newField = VectorField::Load(filename);
+		if (newField)
+		{
+			if (field)
+			{
+				ui.mainViewer->GetRenderer()->SetScene(0);
+				ui.sliceViewer->GetRenderer()->SetScene(0);
+				delete field;
+				field = 0;
+			}
+			field = newField;
+		}
+	}
+
+	// ------------------------------------------------------------------------
 	void MainWindow::on_actionLoad_triggered()
 	{
-		// TODO: show open dialog, load new dataset
+		// Show open dialog
+		QString filename = QFileDialog::getOpenFileName(
+			this, "Load vector field", QString(), 
+			"Volume data (*.vti *.mha *.mhd);;"
+			"VTK volumes (*.vti);;"
+			"MetaImage files (*.mha *.mhd)");
+		// This returns a null string when cancelled
+		if (!filename.isNull())
+		{
+			LoadField(filename);
+		}
 	}
 
 	// ------------------------------------------------------------------------

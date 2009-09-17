@@ -27,7 +27,7 @@
        <number>6</number>
       </property>
       <item>
-       <widget class="NQVTKWidget" name="mainViewer" native="true">
+       <widget class="VFE::MainViewer" name="mainViewer" native="true">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
           <horstretch>0</horstretch>
@@ -37,7 +37,7 @@
        </widget>
       </item>
       <item>
-       <widget class="NQVTKWidget" name="sliceViewer" native="true">
+       <widget class="VFE::SliceViewer" name="sliceViewer" native="true">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
           <horstretch>0</horstretch>
@@ -176,9 +176,15 @@ p, li { white-space: pre-wrap; }
  </widget>
  <customwidgets>
   <customwidget>
-   <class>NQVTKWidget</class>
+   <class>VFE::MainViewer</class>
    <extends>QWidget</extends>
-   <header location="global">NQVTKGui/Viewports/NQVTKWidget.h</header>
+   <header>MainViewer.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>VFE::SliceViewer</class>
+   <extends>QWidget</extends>
+   <header>SliceViewer.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

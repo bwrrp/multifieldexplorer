@@ -60,11 +60,15 @@ SET( ${ProjectName}_SourceBaseDir
 
 SET( ${ProjectName}_Modules
 	Gui
+	Data
+	Rendering
 )
 
 # Friendly names for the modules
 SET( ${ProjectName}_ModuleNames
 	"GUI"
+	"Data"
+	"Rendering"
 )
 
 # --------------------------------------------------
@@ -72,6 +76,16 @@ SET( ${ProjectName}_ModuleNames
 
 SET( ${ProjectName}_Gui_Classes
 	MainWindow
+	MainViewer
+	SliceViewer
+)
+
+SET( ${ProjectName}_Data_Classes
+	VectorField
+)
+
+SET( ${ProjectName}_Rendering_Classes
+	VectorNPRStyle
 )
 
 # --------------------------------------------------
@@ -178,6 +192,9 @@ FOREACH( i RANGE ${nmodules} )
 				${ProjectName}_${module}_Source 
 			)
 		ENDFOREACH( class )
+		
+		# Qt MOC
+		QT4_AUTOMOC( ${${ProjectName}_${module}_Source} )
 	ENDIF( EXISTS ${cmakeincludefile} )
 
 	# Create source group for this module
@@ -217,12 +234,6 @@ SOURCE_GROUP( "Generated files"
 INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_SOURCE_DIR} )
 INCLUDE_DIRECTORIES( ${${ProjectName}_SourceBaseDir} )
 INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_BINARY_DIR} )
-
-# --------------------------------------------------
-# Qt MOC
-
-# TODO: integrate finding .UI files with the class source collector
-QT4_AUTOMOC( ${${ProjectName}_${module}_Source} )
 
 # --------------------------------------------------
 # Executable target

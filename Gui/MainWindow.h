@@ -6,6 +6,8 @@
 
 namespace VFE
 {
+	class VectorField;
+
 	class MainWindow : public QMainWindow
 	{
 		Q_OBJECT;
@@ -16,6 +18,10 @@ namespace VFE
 
 	protected:
 		Ui::MainWindow ui;
+
+		VectorField *field;
+
+		void LoadField(const QString &filename);
 
 	private slots:
 		void on_actionLoad_triggered();
