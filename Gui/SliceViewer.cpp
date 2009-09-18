@@ -22,6 +22,11 @@ namespace VFE
 			NQVTK::Vector3(0.0, 20.0, 0.0));
 		SetRenderer(renderer);
 		SetInteractor(new NQVTK::SliceViewInteractor(renderer));
+
+		// TODO: create interactor and use crosshair for point selection
+		toggleCrosshair(true);
+		connect(this, SIGNAL(cursorPosChanged(double, double)), 
+			this, SLOT(setCrosshairPos(double, double)));
 	}
 
 	// ------------------------------------------------------------------------
@@ -32,13 +37,13 @@ namespace VFE
     // ------------------------------------------------------------------------
 	void SliceViewer::initializeGL()
 	{
+		Superclass::initializeGL();
+
 		NQVTK::SliceRenderer *renderer = 
 			dynamic_cast<NQVTK::SliceRenderer*>(GetRenderer());
 		if (!renderer->CreateDefaultShader())
 		{
 			qDebug("Could not create slice viewer shader!");
 		}
-
-		Superclass::initializeGL();
 	}
 }
