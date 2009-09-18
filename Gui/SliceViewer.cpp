@@ -17,9 +17,9 @@ namespace VFE
 	{
 		NQVTK::SliceRenderer *renderer = new NQVTK::SliceRenderer();
 		renderer->SetPlane(
-			NQVTK::Vector3(-10, -10, 0), 
-			NQVTK::Vector3(20, 0, 0), 
-			NQVTK::Vector3(0, 20, 0));
+			NQVTK::Vector3(-10.0, -10.0, 5.0), 
+			NQVTK::Vector3(20.0, 0.0, 0.0), 
+			NQVTK::Vector3(0.0, 20.0, 0.0));
 		SetRenderer(renderer);
 		SetInteractor(new NQVTK::SliceViewInteractor(renderer));
 	}
@@ -27,5 +27,18 @@ namespace VFE
 	// ------------------------------------------------------------------------
 	SliceViewer::~SliceViewer()
 	{
+	}
+
+    // ------------------------------------------------------------------------
+	void SliceViewer::initializeGL()
+	{
+		NQVTK::SliceRenderer *renderer = 
+			dynamic_cast<NQVTK::SliceRenderer*>(GetRenderer());
+		if (!renderer->CreateDefaultShader())
+		{
+			qDebug("Could not create slice viewer shader!");
+		}
+
+		Superclass::initializeGL();
 	}
 }

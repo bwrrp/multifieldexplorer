@@ -13,11 +13,11 @@ namespace VFE
 	// ------------------------------------------------------------------------
 	MainViewer::MainViewer(QWidget *parent) : NQVTKWidget(parent)
 	{
-		NQVTK::SimpleRenderer *ren = new NQVTK::SimpleRenderer();
-		NQVTK::ArcballCamera *cam = new NQVTK::ArcballCamera();
-		ren->SetCamera(cam);
-		SetRenderer(ren);
-		SetInteractor(new NQVTK::ArcballCameraInteractor(cam));
+		NQVTK::SimpleRenderer *renderer = new NQVTK::SimpleRenderer();
+		NQVTK::ArcballCamera *camera = new NQVTK::ArcballCamera();
+		renderer->SetCamera(camera);
+		SetRenderer(renderer);
+		SetInteractor(new NQVTK::ArcballCameraInteractor(camera));
 	}
 
 	// ------------------------------------------------------------------------
