@@ -178,13 +178,13 @@ p, li { white-space: pre-wrap; }
   <customwidget>
    <class>VFE::MainViewer</class>
    <extends>QWidget</extends>
-   <header>MainViewer.h</header>
+   <header>Gui/MainViewer.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>VFE::SliceViewer</class>
    <extends>QWidget</extends>
-   <header>SliceViewer.h</header>
+   <header>Gui/SliceViewer.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

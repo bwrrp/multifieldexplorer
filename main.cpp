@@ -4,7 +4,9 @@
 #include <QApplication>
 #include "Gui/MainWindow.h"
 
+#ifdef WIN32
 #include <vtkWin32ProcessOutputWindow.h>
+#endif
 
 int main(int argc, char *argv[]) 
 {
