@@ -3,7 +3,7 @@
 #include <NQVTK/ParamSets/VolumeParamSet.h>
 
 #include <NQVTK/Rendering/Scene.h>
-#include <NQVTK/Rendering/Volume.h>
+#include <NQVTK/Rendering/ImageDataVolume.h>
 
 #include <NQVTK/Renderables/PolyData.h>
 
@@ -33,6 +33,7 @@ namespace VFE
 			reader->SetFileName(filename.toUtf8());
 			reader->Update();
 			volume = reader->GetOutput();
+			volume->Register(0);
 		}
 		else if (fi.suffix() == "vti")
 		{
@@ -41,6 +42,7 @@ namespace VFE
 			reader->SetFileName(filename.toUtf8());
 			reader->Update();
 			volume = reader->GetOutput();
+			volume->Register(0);
 		}
 		else
 		{
@@ -48,9 +50,12 @@ namespace VFE
 		}
 
 		// Quick sanity check
-		bool ok = (volume->GetDataDimension() == 3);
+		bool ok = volume != 0 && 
+			(volume->GetDataDimension() == 3) && 
+			(volume->GetNumberOfScalarComponents() == 3);
 		if (!ok) 
 		{
+			qDebug("Not a vector volume!");
 			volume->Delete();
 			volume = 0;
 		}
@@ -64,18 +69,21 @@ namespace VFE
 		vtkSmartPointer<vtkCubeSource> cube = 
 			vtkSmartPointer<vtkCubeSource>::New();
 		cube->SetBounds(volume->GetBounds());
-		
+
 		// Triangulate, NQVTK doesn't like quads
 		vtkSmartPointer<vtkTriangleFilter> tri = 
 			vtkSmartPointer<vtkTriangleFilter>::New();
 		tri->SetInputConnection(cube->GetOutputPort());
 		tri->Update();
 
-		return tri->GetOutput();
+		vtkPolyData *bb = tri->GetOutput();
+		bb->Register(0);
+
+		return bb;
 	}
 
 	// ------------------------------------------------------------------------
-	VectorField::VectorField() : scene(0)
+	VectorField::VectorField(NQVTK::Scene *scene) : scene(scene)
 	{
 	}
 
@@ -88,10 +96,31 @@ namespace VFE
 	// ------------------------------------------------------------------------
 	VectorField *VectorField::Load(const QString &filename)
 	{
-		// TODO: load the vector field
-		// TODO: create bounding geometry
-		// TODO: assemble NQVTK scene
+		// Load the vector field
+		vtkImageData *vtkvolume = LoadVolume(filename);
+		if (!vtkvolume)
+		{
+			// Returns null when errors occur
+			return 0;
+		}
 
-		return 0;
+		// Create bounding geometry
+		vtkPolyData *vtkbb = CreateBoundingBox(vtkvolume);
+
+		// Assemble NQVTK scene
+		NQVTK::Scene *scene = new NQVTK::Scene();
+		NQVTK::Renderable *bb = new NQVTK::PolyData(vtkbb);
+		NQVTK::Volume *volume = NQVTK::ImageDataVolume::New(vtkvolume);
+		bb->SetParamSet("volume", new NQVTK::VolumeParamSet(volume));
+		scene->AddRenderable(bb);
+
+		// Delete VTK data
+		vtkvolume->Delete();
+		vtkbb->Delete();
+
+		// Create the VectorField instance
+		VectorField *vf = new VectorField(scene);
+
+		return vf;
 	}
 }

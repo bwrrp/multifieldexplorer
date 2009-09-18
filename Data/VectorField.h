@@ -19,7 +19,7 @@ namespace VFE
 		NQVTK::Scene *GetScene() { return scene; }
 
 	protected:
-		VectorField();
+		VectorField(NQVTK::Scene *scene);
 
 		NQVTK::Scene *scene;
 	};

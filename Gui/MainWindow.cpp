@@ -40,6 +40,9 @@ namespace VFE
 				field = 0;
 			}
 			field = newField;
+
+			ui.mainViewer->GetRenderer()->SetScene(field->GetScene());
+			ui.sliceViewer->GetRenderer()->SetScene(field->GetScene());
 		}
 	}
 
