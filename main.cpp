@@ -2,6 +2,8 @@
 #include "GLBlaat/GL.h"
 
 #include <QApplication>
+#include <QStringList>
+
 #include "Gui/MainWindow.h"
 
 #ifdef WIN32
@@ -21,6 +23,13 @@ int main(int argc, char *argv[])
 	QApplication app(argc, argv);
 
 	VFE::MainWindow *window = new VFE::MainWindow();
+
+	// If a field was specified on the command line, load it
+	QStringList args = app.arguments();
+	if (args.size() > 1)
+	{
+		window->LoadField(args[1]);
+	}
 
 	// Go!
 	window->show();
