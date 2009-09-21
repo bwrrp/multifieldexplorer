@@ -42,10 +42,12 @@ namespace VFE
 		GLProgram *scribe = GLProgram::New();
 		// Scribe vertex shaders
 		bool res = scribe->AddVertexShader(
-			AddShaderDefines(LoadTextFile("D:\\Temp\\TestScribeVS.txt")));
+			AddShaderDefines(LoadTextFile(
+			"D:\\Temp\\VFE\\TestScribeVS.txt")));
 		// Scribe fragment shaders
 		if (res) res = scribe->AddFragmentShader(
-			AddShaderDefines(LoadTextFile("D:\\Temp\\TestScribeFS.txt")));
+			AddShaderDefines(LoadTextFile(
+			"D:\\Temp\\VFE\\TestScribeFS.txt")));
 		if (res) res = scribe->AddFragmentShader(
 			AddShaderDefines(Shaders::LibUtility));
 		if (res) res = scribe->Link();
@@ -64,10 +66,12 @@ namespace VFE
 		GLProgram *raycaster = GLProgram::New();
 		// raycaster vertex shaders
 		bool res = raycaster->AddVertexShader(
-			AddShaderDefines(LoadTextFile("D:\\Temp\\TestRaycasterVS.txt")));
+			AddShaderDefines(LoadTextFile(
+			"D:\\Temp\\VFE\\TestRaycasterVS.txt")));
 		// raycaster fragment shaders
 		if (res) res = raycaster->AddFragmentShader(
-			AddShaderDefines(LoadTextFile("D:\\Temp\\TestRaycasterFS.txt")));
+			AddShaderDefines(LoadTextFile(
+			"D:\\Temp\\VFE\\TestRaycasterFS.txt")));
 		if (res) res = raycaster->AddFragmentShader(
 			AddShaderDefines(Shaders::LibUtility));
 		if (res) res = raycaster->Link();
@@ -86,10 +90,12 @@ namespace VFE
 		GLProgram *painter = GLProgram::New();
 		// painter vertex shaders
 		bool res = painter->AddVertexShader(
-			AddShaderDefines(LoadTextFile("D:\\Temp\\TestPainterVS.txt")));
+			AddShaderDefines(LoadTextFile(
+			"D:\\Temp\\VFE\\TestPainterVS.txt")));
 		// painter fragment shaders
 		if (res) res = painter->AddFragmentShader(
-			AddShaderDefines(LoadTextFile("D:\\Temp\\TestPainterFS.txt")));
+			AddShaderDefines(LoadTextFile(
+			"D:\\Temp\\VFE\\TestPainterFS.txt")));
 		if (res) res = painter->AddFragmentShader(
 			AddShaderDefines(Shaders::LibUtility));
 		if (res) res = painter->Link();
