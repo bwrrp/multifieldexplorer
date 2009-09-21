@@ -141,19 +141,20 @@ p, li { white-space: pre-wrap; }
      <height>19</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuField">
+   <widget class="QMenu" name="menuApp">
     <property name="title">
-     <string>Field</string>
+     <string>VFE</string>
     </property>
     <addaction name="actionLoad"/>
     <addaction name="separator"/>
+    <addaction name="actionReloadShaders"/>
     <addaction name="actionQuit"/>
    </widget>
-   <addaction name="menuField"/>
+   <addaction name="menuApp"/>
   </widget>
   <action name="actionLoad">
    <property name="text">
-    <string>&amp;Load</string>
+    <string>&amp;Load vector field</string>
    </property>
    <property name="toolTip">
     <string>Load Vector Field</string>
@@ -171,6 +172,14 @@ p, li { white-space: pre-wrap; }
    </property>
    <property name="shortcut">
     <string>Ctrl+Q</string>
+   </property>
+  </action>
+  <action name="actionReloadShaders">
+   <property name="text">
+    <string>&amp;Reload shaders</string>
+   </property>
+   <property name="shortcut">
+    <string>F5</string>
    </property>
   </action>
  </widget>

@@ -67,4 +67,11 @@ namespace VFE
 	{
 		qApp->quit();
 	}
+
+	// ------------------------------------------------------------------------
+	void MainWindow::on_actionReloadShaders_triggered()
+	{
+		ui.mainViewer->Initialize();
+		ui.sliceViewer->Initialize();
+	}
 }

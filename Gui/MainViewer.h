@@ -4,6 +4,8 @@
 
 namespace VFE
 {
+	class VectorNPRStyle;
+
 	class MainViewer : public NQVTKWidget
 	{
 		Q_OBJECT;
@@ -11,5 +13,8 @@ namespace VFE
 	public:
 		MainViewer(QWidget *parent = 0);
 		virtual ~MainViewer();
+
+	private:
+		VectorNPRStyle *style;
 	};
 }

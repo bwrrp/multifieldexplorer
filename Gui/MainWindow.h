@@ -26,5 +26,8 @@ namespace VFE
 	private slots:
 		void on_actionLoad_triggered();
 		void on_actionQuit_triggered();
+
+		// TODO: remove this and turn shaders into resource
+		void on_actionReloadShaders_triggered();
 	};
 }
