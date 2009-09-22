@@ -1,0 +1,233 @@
+#extension GL_ARB_texture_rectangle : enable
+#ifdef GL_EXT_gpu_shader4
+#extension GL_EXT_gpu_shader4 : enable
+#endif
+
+uniform sampler2DRect infoPrevious;
+uniform sampler2DRect infoCurrent;
+uniform sampler2DRect normals;
+uniform sampler2DRect colors;
+
+uniform int layer;
+uniform float viewportX;
+uniform float viewportY;
+
+uniform sampler3D volume[NQVTK_RAYCASTER_VOLUMECOUNT];
+uniform float volumeDataShift[NQVTK_RAYCASTER_VOLUMECOUNT];
+uniform float volumeDataScale[NQVTK_RAYCASTER_VOLUMECOUNT];
+uniform vec3 volumeOrigin[NQVTK_RAYCASTER_VOLUMECOUNT];
+uniform vec3 volumeSize[NQVTK_RAYCASTER_VOLUMECOUNT];
+uniform vec3 volumeSpacing[NQVTK_RAYCASTER_VOLUMECOUNT];
+
+uniform float tfStart[NQVTK_RAYCASTER_VOLUMECOUNT];
+uniform float tfEnd[NQVTK_RAYCASTER_VOLUMECOUNT];
+
+uniform float stepSize;
+uniform float kernelSize;
+
+uniform float isoOpacity;
+
+// Prototypes from LibUtility
+vec3 phongShading(vec3 matColor, vec3 normal);
+bool getBit(float byte, int bit);
+float setBit(float byte, int bit, bool on);
+
+// Get vector from volume
+vec3 getVector(int v, vec3 pos) {
+	vec4 tpos = gl_TextureMatrixInverse[v] * vec4(pos, 1.0);
+	vec3 p = ((tpos.xyz / tpos.w) - volumeOrigin[v]) / volumeSize[v];
+	return vec3(volumeDataShift[v]) + volumeDataScale[v] * texture3D(volume[v], p).xyz;
+}
+
+// Linear Jacobian
+mat3 jacobian(int v, vec3 pos, float delta, vec3 val) {
+#ifdef NQVTK_RAYCASTER_CENTRALDIFFERENCES
+	vec3 dx = (getVector(v, pos + vec3(0.5 * delta, 0.0, 0.0)) - 
+		getVector(v, pos - vec3(0.5 * delta, 0.0, 0.0))) / delta;
+	vec3 dy = (getVector(v, pos + vec3(0.0, 0.5 * delta, 0.0)) - 
+		getVector(v, pos - vec3(0.0, 0.5 * delta, 0.0))) / delta;
+	vec3 dz = (getVector(v, pos + vec3(0.0, 0.0, 0.5 * delta)) - 
+		getVector(v, pos - vec3(0.0, 0.0, 0.5 * delta))) / delta;
+#else
+	vec3 dx = (getVector(v, pos + vec3(delta, 0.0, 0.0)) - val) / delta;
+	vec3 dy = (getVector(v, pos + vec3(0.0, delta, 0.0)) - val) / delta;
+	vec3 dz = (getVector(v, pos + vec3(0.0, 0.0, delta)) - val) / delta;
+#endif
+	// Add identity (because we should have used pos + vec instead of vec)
+	return mat3(dx, dy, dz) + mat3(1.0);
+}
+
+// Compute determinant of matrix
+float determinant(mat3 m) {
+	return m[0][0] * m[1][1] * m[2][2] 
+		+ m[0][1] * m[1][2] * m[2][0] 
+		+ m[0][2] * m[1][0] * m[2][1] 
+		- m[0][2] * m[1][1] * m[2][0] 
+		- m[0][1] * m[1][0] * m[2][2] 
+		- m[0][0] * m[1][2] * m[2][1];
+}
+
+float getValue(int v, vec3 pos) {
+	//vec4 tpos = gl_TextureMatrixInverse[v] * vec4(pos, 1.0);
+	//vec3 p = ((tpos.xyz / tpos.w) - volumeOrigin[v]) / volumeSize[v];
+	//return texture3D(volume[v], p).x;
+#ifdef NQVTK_RAYCASTER_CENTRALDIFFERENCES
+	vec3 val = vec3(0.0);
+#else
+	vec3 val = getVector(v, pos);
+#endif
+	float detJ = abs(determinant(jacobian(v, pos, kernelSize, val)));
+	float g = 0.0;
+	if (detJ > 1.0) 
+		g = 1.0 - (1.0 / detJ);
+	else
+		g = detJ - 1.0;
+	return g + 0.5;
+}
+
+// Compute gradient of the volume
+vec3 computeGradient(int v, vec3 pos, float delta, float val) {
+#ifdef NQVTK_RAYCASTER_CENTRALDIFFERENCES
+	float dx = (getValue(v, pos + vec3(0.5 * delta, 0.0, 0.0)) - 
+		getValue(v, pos - vec3(0.5 * delta, 0.0, 0.0))) / delta;
+	float dy = (getValue(v, pos + vec3(0.0, 0.5 * delta, 0.0)) - 
+		getValue(v, pos - vec3(0.0, 0.5 * delta, 0.0))) / delta;
+	float dz = (getValue(v, pos + vec3(0.0, 0.0, 0.5 * delta)) - 
+		getValue(v, pos - vec3(0.0, 0.0, 0.5 * delta))) / delta;
+#else
+	float dx = (getValue(v, pos + vec3(delta, 0.0, 0.0)) - val) / delta;
+	float dy = (getValue(v, pos + vec3(0.0, delta, 0.0)) - val) / delta;
+	float dz = (getValue(v, pos + vec3(0.0, 0.0, delta)) - val) / delta;
+#endif
+	return vec3(dx, dy, dz);
+}
+
+bool isInside(int v, float val) {
+	return (val > tfStart[v] && val < tfEnd[v]);
+}
+
+vec3 refineHitpoint(int v, vec3 pos, vec3 step, bool insideAtPos) {
+	vec3 s = 0.5 * step;
+	vec3 p = pos - s;
+	// 6 refinements should be enough for now
+	for (int r = 0; r < 6; ++r) {
+		float val = getValue(v, p);
+		// Halve the step size
+		s *= 0.5;
+		// Step in which direction?
+		if (isInside(v, val) == insideAtPos) {
+			p -= s;
+		} else {
+			p += s;
+		}
+	}
+	return p;
+}
+
+void main() {
+	// Get info
+	vec4 r0 = gl_FragCoord;
+	r0.x -= viewportX;
+	r0.y -= viewportY;
+	vec4 infoAfter = texture2DRect(infoCurrent, r0.xy);
+
+	// Discard background
+	if (length(infoAfter) == 0.0) discard;
+
+	vec4 infoBefore = texture2DRect(infoPrevious, r0.xy);
+	vec4 normalid = texture2DRect(normals, r0.xy);
+	vec3 normal = normalize(normalid.rgb);
+	float gm = length(normalid.rgb);
+	int id = int(normalid.a) - 1;
+	vec4 color = texture2DRect(colors, r0.xy);
+	// Should be set to infoBefore if raycasting hits a surface
+	vec4 info = infoAfter;
+
+	// Raycast into the slab
+	vec3 startPos = infoBefore.rgb;
+	vec3 endPos = infoAfter.rgb;
+	vec3 ray = endPos - startPos;
+
+	// Determine step, number of steps
+	vec3 step = normalize(ray) * stepSize;
+	float stepLength = stepSize;
+	int numSteps = int(ceil(length(ray) / stepSize));
+
+	// Start raycasting
+	vec3 pos = startPos;
+	bool active[NQVTK_RAYCASTER_VOLUMECOUNT];
+	bool insideAtStart[NQVTK_RAYCASTER_VOLUMECOUNT];
+	bool hit[NQVTK_RAYCASTER_VOLUMECOUNT];
+	vec3 refined[NQVTK_RAYCASTER_VOLUMECOUNT];
+	vec3 gradient[NQVTK_RAYCASTER_VOLUMECOUNT];
+	for (int v = 0; v < NQVTK_RAYCASTER_VOLUMECOUNT; ++v) {
+		active[v] = getBit(infoBefore.a, v);
+		insideAtStart[v] = getBit(infoBefore.a, v + NQVTK_RAYCASTER_VOLUMECOUNT);
+		hit[v] = false;
+		refined[v] = vec3(0.0);
+		gradient[v] = vec3(0.0);
+	}
+	int hitVol = -1;
+	// For each step along the ray...
+	for (int i = 0; i < numSteps + 1 && hitVol < 0; ++i) {
+		for (int v = 0; v < NQVTK_RAYCASTER_VOLUMECOUNT; ++v) {
+			// If the volume is active, sample it
+			if (active[v]) {
+				float val = getValue(v, pos);
+				bool insideAtPos = isInside(v, val);
+				if (insideAtPos != insideAtStart[v]) {
+					// Found an isosurface, so this is the last step
+					hit[v] = true;
+					hitVol = v;
+					// Refine the hit for this volume
+					refined[v] = refineHitpoint(v, pos, step, insideAtPos);
+					// Compute gradient
+					// NOTE: we can't optimize this out, as volume[v] is currently 
+					// only possible for deterministic v (constant or for-loop)
+					// TODO: replace with kernel / spline-based method?
+					gradient[v] = computeGradient(v, refined[v], 
+						kernelSize, getValue(v, refined[v]));
+				}
+			}
+		}
+		// The last step should stay within the slab
+		if (i == numSteps) {
+			step = endPos - pos;
+			stepLength = length(step);
+		}
+		// Step along the ray
+		pos += step;
+	}
+
+	// If we found one or more surfaces, determine the closest one
+	if (hitVol >= 0) {
+		int nearestV = hitVol;
+		float nearestD = length(refined[hitVol] - startPos);
+		for (int v = 0; v < NQVTK_RAYCASTER_VOLUMECOUNT; ++v) {
+			if (hit[v]) {
+				float d = length(refined[v] - startPos);
+				if (d < nearestD) {
+					nearestV = v;
+					nearestD = d;
+				}
+			}
+		}
+		// Update infobuffers based on this hit
+		// The refined position can be on either side of the surface, but
+		// pos is definitely on the other side, but we store refined + step 
+		// instead so we have "accurate" positions in the painter stage
+		info = vec4(refined[nearestV] + step, setBit(infoBefore.a, 
+			nearestV + NQVTK_RAYCASTER_VOLUMECOUNT, 
+			!insideAtStart[nearestV]));
+		color = vec4(vec3(1.0), isoOpacity);
+		id = nearestV + NQVTK_RAYCASTER_VOLUMECOUNT;
+		normal = gradient[nearestV];
+		if (dot(normal, step) > 0.0) normal = -normal;
+		normal = gl_NormalMatrix * normal;
+	}
+
+	// Fill the infobuffer
+	gl_FragData[0] = info;
+	gl_FragData[1] = vec4(normal, float(id + 1));
+	gl_FragData[2] = color;
+}
