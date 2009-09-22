@@ -82,23 +82,27 @@ void main() {
 	}
 	*/
 
-	// Test: vector direction visualization
-	vec4 tpos = gl_TextureMatrixInverse[0] * vec4(infoAfter.rgb, 1.0);
-	vec3 p = ((tpos.xyz / tpos.w) - volumeOrigin[0]) / volumeSize[0];
-	vec3 dir = vec3(volumeDataShift[0]) + volumeDataScale[0] * texture3D(volume[0], p).xyz;
-	dir = gl_NormalMatrix * normalize(dir);
-	vec2 d = dir.xy; 
-	//vec2 d = (dir - dot(dir, normal) * normal).xy;
-	//* Smearing
-	int n = 0;
-	float f = 0.0;
-	for (int i = 0; i < int(100.0 * testParam); ++i) {
-		vec2 tc = r0.xy + float(i - 25) * d;
-		f += dotTexture(tc);
-		++n;
+	//* Test: vector direction visualization
+	if (id == 1)
+	{
+		vec4 tpos = gl_TextureMatrixInverse[0] * vec4(infoAfter.rgb, 1.0);
+		vec3 p = ((tpos.xyz / tpos.w) - volumeOrigin[0]) / volumeSize[0];
+		vec3 dir = vec3(volumeDataShift[0]) + volumeDataScale[0] * texture3D(volume[0], p).xyz;
+		dir = gl_NormalMatrix * normalize(dir);
+		vec2 d = dir.xy; 
+		//vec2 d = (dir - dot(dir, normal) * normal).xy;
+		//* Smearing
+		int n = 0;
+		float f = 0.0;
+		for (int i = 0; i < int(100.0 * testParam); ++i)
+		{
+			vec2 tc = r0.xy + float(i - 25) * d;
+			f += dotTexture(tc);
+			++n;
+		}
+		f /= float(n);
+		color.rgb *= f;
 	}
-	f /= float(n);
-	color.rgb *= f;
 	//*/
 
 	// Apply contouring

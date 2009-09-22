@@ -32,11 +32,6 @@ vec3 phongShading(vec3 matColor, vec3 normal);
 bool getBit(float byte, int bit);
 float setBit(float byte, int bit, bool on);
 
-struct FeatureVector
-{
-	vec3 vector;
-};
-
 // Get vector from volume
 vec3 getVector(int v, vec3 pos) {
 	vec4 tpos = gl_TextureMatrixInverse[v] * vec4(pos, 1.0);
@@ -88,19 +83,47 @@ float growth(int v, vec3 pos)
 	return g + 0.5;
 }
 
+struct FeatureVector
+{
+	vec3 pos;
+	vec3 vector;
+	vec3 dir;
+	float magnitude;
+	float growth;
+};
+
 FeatureVector getFeatureVector(int v, vec3 pos)
 {
 	FeatureVector result;
-	result.vector = pos;// getVector(v, pos);
+	result.pos = pos;
+	result.vector = getVector(v, pos);
+	result.dir = normalize(result.vector);
+	result.magnitude = length(result.vector);
+	result.growth = growth(v, pos);
 	return result;
 }
 
-float getDistance(FeatureVector a, FeatureVector b, float power)
+float distance(FeatureVector a, FeatureVector b, 
+	FeatureVector mask, float power)
 {
 	float sum = 0.0;
-	// vector
-	vec3 v = pow(a.vector - b.vector, vec3(power));
+	vec3 v;
+	// pos
+	v = pow(a.pos - b.pos, vec3(power));
+	v *= mask.pos;
 	sum += v.x + v.y + v.z;
+	// vector
+	v = pow(a.vector - b.vector, vec3(power));
+	v *= mask.vector;
+	sum += v.x + v.y + v.z;
+	// dir
+	v = pow(a.dir - b.dir, vec3(power));
+	v *= mask.dir;
+	sum += v.x + v.y + v.z;
+	// magnitude
+	sum += mask.magnitude * pow(a.magnitude - b.magnitude, power);
+	// growth
+	sum += mask.growth * pow(a.growth - b.growth, power);
 	return pow(sum, 1.0/power);
 }
 
@@ -110,8 +133,15 @@ float getValue(int v, vec3 pos)
 	FeatureVector a = getFeatureVector(v, pos);
 	// TODO: this should probably be computed only once per example feature
 	FeatureVector b = getFeatureVector(v, cursorPos);
+	// TODO: mask should be configurable by user per feature
+	FeatureVector mask;
+	mask.pos = vec3(0.0);
+	mask.vector = vec3(0.0);
+	mask.dir = vec3(0.0);
+	mask.magnitude = 1.0;
+	mask.growth = 0.0;
 	// Compute distance
-	return getDistance(a, b, 2.0);
+	return distance(a, b, mask, 2.0);
 }
 
 // Compute gradient of the volume
@@ -139,7 +169,7 @@ bool oldisInside(int v, float val) {
 
 bool isInside(int v, float val) {
 	float a = 0.0;
-	float b = 2.0;
+	float b = 0.5;
 	return a <= b ? 
 		(val > a && val < b) :
 		(val < b || val > a);
