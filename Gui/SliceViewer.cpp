@@ -7,6 +7,7 @@
 
 #include <NQVTK/Math/Vector3.h>
 
+#include <NQVTK/Rendering/Camera.h>
 #include <NQVTK/Rendering/SliceRenderer.h>
 
 
@@ -27,6 +28,8 @@ namespace VFE
 		toggleCrosshair(true);
 		connect(this, SIGNAL(cursorPosChanged(double, double)), 
 			this, SLOT(setCrosshairPos(double, double)));
+		connect(this, SIGNAL(cursorPosChanged(double, double)), 
+			this, SLOT(on_cursorPosChanged(double, double)));
 	}
 
 	// ------------------------------------------------------------------------
@@ -45,5 +48,22 @@ namespace VFE
 		{
 			qDebug("Could not create slice viewer shader!");
 		}
+	}
+
+	// ------------------------------------------------------------------------
+	void SliceViewer::on_cursorPosChanged(double x, double y)
+	{
+		// Get plane parameters
+		NQVTK::SliceRenderer *renderer = 
+			dynamic_cast<NQVTK::SliceRenderer*>(GetRenderer());
+		NQVTK::Vector3 origin = renderer->GetViewportPlaneOrigin();
+		NQVTK::Vector3 right = renderer->GetViewportPlaneRight();
+		NQVTK::Vector3 up = renderer->GetViewportPlaneUp();
+		// Get 3D position of the cursor
+		x = 0.5 * (1.0 + x / renderer->GetCamera()->aspect);
+		y = 0.5 * (1.0 - y);
+		// TODO: check this!
+		NQVTK::Vector3 pos = origin + x * right + y * up;
+		emit CursorPosChanged(pos);
 	}
 }

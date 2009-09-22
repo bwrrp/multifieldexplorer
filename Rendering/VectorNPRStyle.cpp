@@ -120,4 +120,13 @@ namespace VFE
 		}
 		return painter;
 	}
+
+	// ------------------------------------------------------------------------
+	void VectorNPRStyle::UpdatePainterParameters(GLProgram *painter)
+	{
+		Superclass::UpdatePainterParameters(painter);
+
+		painter->SetUniform3f("cursorPos", 
+			cursorPos.x, cursorPos.y, cursorPos.z);
+	}
 }

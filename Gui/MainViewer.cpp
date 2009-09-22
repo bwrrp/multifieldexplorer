@@ -32,4 +32,11 @@ namespace VFE
 	MainViewer::~MainViewer()
 	{
 	}
+
+	// ------------------------------------------------------------------------
+	void MainViewer::SetCursorPos(NQVTK::Vector3 pos)
+	{
+		style->cursorPos = pos;
+		updateGL();
+	}
 }

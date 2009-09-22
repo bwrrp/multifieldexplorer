@@ -67,17 +67,8 @@ void main() {
 	int id = int(normalid.a) - 1;
 	vec4 color = texture2DRect(colors, r0.xy);
 
-	// Some extra coloring effects for volume features
-	if (length(infoBefore) > 0.0) {
-		if (id == 2) color.rgb = vec3(1.0, 0.5, 0.0);
-		if (id == 3) color.rgb = vec3(0.0, 0.5, 1.0);
-		if ((getBit(infoBefore.a, 2) && getBit(infoBefore.a, 3)) != 
-			(getBit(infoAfter.a, 2) && getBit(infoAfter.a, 3))) {
-			color.a = 1.0;
-		} else if (id == 2 || id == 3) {
-			color.rgb = mix(color.rgb, vec3(1.0), 0.5);
-		}
-	}
+	// Some extra coloring effects
+	if (id == 0) color.a = 0.1;
 
 	// Simple lighting
 	if (gm > 0.0) color = vec4(phongShading(color.rgb, normal), color.a);
@@ -109,13 +100,6 @@ void main() {
 	f /= float(n);
 	color.rgb *= f;
 	//*/
-	/* Striping with orthogonality threshold
-	vec2 d2 = vec2(-d.y, d.x);
-	float f = mod(dot(r0.xy, normalize(d2)), 20.0) < 6.0 ? 0.0 : 1.0;
-	//if (length(d) < abs(dir.z) * testParam) f = dotTexture(r0.xy);
-	if (abs(dot(dir, normal)) > testParam) f = dotTexture(r0.xy);
-	color.rgb *= (0.5 + 0.5 * f);
-	//*/
 
 	// Apply contouring
 	const int NB_SIZE = 4;
@@ -133,62 +117,6 @@ void main() {
 		nbIds[i] = int(normalid.a) - 1;
 		nbNormals[i] = normalid.rgb;
 		nbPos[i] = texture2DRect(infoCurrent, nb[i]).rgb;
-	}
-	// Detect silhouettes
-	bool silhouette = false;
-	bool ignoreSilhouette = true;
-	vec3 viewDir = normalize(infoAfter.rgb - cameraPos);
-	for (int i = 0; i < NB_SIZE; ++i) {
-		// TODO: these positions are not refined surface hits!
-		vec3 posdiff = nbPos[i] - infoAfter.rgb;
-		// Background contains 0 positions and needs special care
-		bool bgsil = id < 0 ^^ nbIds[i] < 0;
-		if (length(posdiff) > occlusionEdgeThreshold || bgsil) {
-			silhouette = true;
-			// Determine frontmost
-			// Note that id and nbIds[i] can't both be background
-			int frontmost;
-			if ((!bgsil && dot(viewDir, posdiff) > 0.0) || (bgsil && id >= 0)) {
-				frontmost = id;
-			} else {
-				frontmost = nbIds[i];
-			}
-			// Ignore silhouette if all frontmost objects are ignored
-			ignoreSilhouette = ignoreSilhouette && ignoreObject(frontmost);
-		}
-	}
-	if (silhouette) {
-		if (!ignoreSilhouette) color = vec4(0.0, 0.0, 0.0, 1.0);
-	} else {
-		bool intersection = false;
-		bool ignoreIntersection = true;
-		for (int i = 0; i < NB_SIZE; ++i) {
-			if (nbIds[i] != id) {
-				intersection = true;
-				// Ignore intersection if the object is ignored
-				ignoreIntersection = ignoreIntersection && ignoreObject(nbIds[i]);
-			}
-		}
-		// Also ignore intersections if the current object is ignored
-		ignoreIntersection = ignoreIntersection || ignoreObject(id);
-		if (intersection) {
-			if (!ignoreIntersection) color = vec4(0.0, 0.0, 0.3, 1.0);
-		} else {
-			// All ids are the same, only draw corners if the object is not ignored
-			if (!ignoreObject(id)) {
-				// Detect corners
-				bool corner = false;
-				for (int i = 0; i < NB_SIZE; ++i) {
-					if (abs(dot(normalize(nbNormals[i]), normal)) < 
-						cornerEdgeThreshold) {
-						corner = true;
-					}
-				}
-				if (corner) {
-					color = vec4(0.0, 0.3, 0.0, 1.0);
-				}
-			}
-		}
 	}
 
 	// Premultiply colors

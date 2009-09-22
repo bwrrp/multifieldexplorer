@@ -19,6 +19,9 @@ namespace VFE
 	MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), field(0)
 	{
 		ui.setupUi(this);
+
+		connect(ui.sliceViewer, SIGNAL(CursorPosChanged(NQVTK::Vector3)), 
+			ui.mainViewer, SLOT(SetCursorPos(NQVTK::Vector3)));
 	}
 
 	// ------------------------------------------------------------------------

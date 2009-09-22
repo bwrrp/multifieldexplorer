@@ -2,6 +2,8 @@
 
 #include <NQVTKGui/Viewports/NQVTKWidget.h>
 
+#include <NQVTK/Math/Vector3.h>
+
 namespace VFE
 {
 	class SliceViewer : public NQVTKWidget
@@ -14,7 +16,13 @@ namespace VFE
 		SliceViewer(QWidget *parent = 0);
 		virtual ~SliceViewer();
 
+	signals:
+		void CursorPosChanged(NQVTK::Vector3 pos);
+
 	protected:
 		virtual void initializeGL();
+
+	private slots:
+		void on_cursorPosChanged(double x, double y);
 	};
 }
