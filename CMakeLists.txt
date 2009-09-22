@@ -78,6 +78,7 @@ SET( ${ProjectName}_Gui_Classes
 	MainWindow
 	MainViewer
 	SliceViewer
+	RenderControls
 )
 
 SET( ${ProjectName}_Data_Classes

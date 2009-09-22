@@ -143,18 +143,26 @@ p, li { white-space: pre-wrap; }
    </property>
    <widget class="QMenu" name="menuApp">
     <property name="title">
-     <string>VFE</string>
+     <string>&amp;VFE</string>
     </property>
     <addaction name="actionLoad"/>
     <addaction name="separator"/>
-    <addaction name="actionReloadShaders"/>
     <addaction name="actionQuit"/>
    </widget>
+   <widget class="QMenu" name="menuOptions">
+    <property name="title">
+     <string>&amp;Options</string>
+    </property>
+    <addaction name="actionRenderingOptions"/>
+    <addaction name="separator"/>
+    <addaction name="actionReloadShaders"/>
+   </widget>
    <addaction name="menuApp"/>
+   <addaction name="menuOptions"/>
   </widget>
   <action name="actionLoad">
    <property name="text">
-    <string>&amp;Load vector field</string>
+    <string>&amp;Load vector field...</string>
    </property>
    <property name="toolTip">
     <string>Load Vector Field</string>
@@ -180,6 +188,11 @@ p, li { white-space: pre-wrap; }
    </property>
    <property name="shortcut">
     <string>F5</string>
+   </property>
+  </action>
+  <action name="actionRenderingOptions">
+   <property name="text">
+    <string>&amp;Rendering options...</string>
    </property>
   </action>
  </widget>

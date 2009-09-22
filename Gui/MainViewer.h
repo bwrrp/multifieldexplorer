@@ -16,6 +16,8 @@ namespace VFE
 		MainViewer(QWidget *parent = 0);
 		virtual ~MainViewer();
 
+		VectorNPRStyle *GetStyle() { return style; }
+
 	public slots:
 		void SetCursorPos(NQVTK::Vector3);
 

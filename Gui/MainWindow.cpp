@@ -20,6 +20,8 @@ namespace VFE
 	{
 		ui.setupUi(this);
 
+		rcdialog = new RenderControls(ui.mainViewer, this);
+
 		connect(ui.sliceViewer, SIGNAL(CursorPosChanged(NQVTK::Vector3)), 
 			ui.mainViewer, SLOT(SetCursorPos(NQVTK::Vector3)));
 	}
@@ -27,6 +29,7 @@ namespace VFE
 	// ------------------------------------------------------------------------
 	MainWindow::~MainWindow()
 	{
+		delete rcdialog;
 	}
 
 	// ------------------------------------------------------------------------
@@ -69,6 +72,12 @@ namespace VFE
 	void MainWindow::on_actionQuit_triggered()
 	{
 		qApp->quit();
+	}
+
+	// ------------------------------------------------------------------------
+	void MainWindow::on_actionRenderingOptions_triggered()
+	{
+		rcdialog->show();
 	}
 
 	// ------------------------------------------------------------------------
