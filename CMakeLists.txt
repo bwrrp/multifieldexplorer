@@ -79,6 +79,8 @@ SET( ${ProjectName}_Gui_Classes
 	MainViewer
 	SliceViewer
 	RenderControls
+
+	SelectionSliceViewInteractor
 )
 
 SET( ${ProjectName}_Data_Classes

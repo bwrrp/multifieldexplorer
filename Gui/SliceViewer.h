@@ -18,11 +18,9 @@ namespace VFE
 
 	signals:
 		void CursorPosChanged(NQVTK::Vector3 pos);
+		void PointSelected(NQVTK::Vector3 pos);
 
 	protected:
 		virtual void initializeGL();
-
-	private slots:
-		void on_cursorPosChanged(double x, double y);
 	};
 }
