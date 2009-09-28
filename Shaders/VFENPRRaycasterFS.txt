@@ -1,3 +1,5 @@
+#version 120
+
 #extension GL_ARB_texture_rectangle : enable
 #ifdef GL_EXT_gpu_shader4
 #extension GL_EXT_gpu_shader4 : enable
@@ -209,7 +211,6 @@ void main() {
 	float gm = length(normalid.rgb);
 	int id = int(normalid.a) - 1;
 	vec4 color = texture2DRect(info2Current, r0.xy);
-	// Should be set to infoBefore if raycasting hits a surface
 	vec4 info = infoAfter;
 
 	// Raycast into the slab
@@ -217,84 +218,89 @@ void main() {
 	vec3 endPos = infoAfter.rgb;
 	vec3 ray = endPos - startPos;
 
-	// Determine step, number of steps
-	vec3 step = normalize(ray) * stepSize;
-	float stepLength = stepSize;
-	int numSteps = int(ceil(length(ray) / stepSize));
+	if (length(ray) > 0) 
+	{
+		// Determine step, number of steps
+		vec3 step = normalize(ray) * stepSize;
+		vec3 normalStep = step;
+		float stepLength = stepSize;
+		int numSteps = int(ceil(length(ray) / stepSize));
 
-	// Start raycasting
-	vec3 pos = startPos;
-	bool active[NQVTK_RAYCASTER_VOLUMECOUNT];
-	bool insideAtStart[NQVTK_RAYCASTER_VOLUMECOUNT];
-	bool hit[NQVTK_RAYCASTER_VOLUMECOUNT];
-	vec3 refined[NQVTK_RAYCASTER_VOLUMECOUNT];
-	vec3 gradient[NQVTK_RAYCASTER_VOLUMECOUNT];
-	for (int v = 0; v < NQVTK_RAYCASTER_VOLUMECOUNT; ++v) {
-		active[v] = getBit(infoBefore.a, v);
-		insideAtStart[v] = getBit(infoBefore.a, v + NQVTK_RAYCASTER_VOLUMECOUNT);
-		hit[v] = false;
-		refined[v] = vec3(0.0);
-		gradient[v] = vec3(0.0);
-	}
-	int hitVol = -1;
-	// For each step along the ray...
-	for (int i = 0; i < numSteps + 1 && hitVol < 0; ++i) {
-		// TODO: loop over features instead of volumes
-		// TODO: we could use multiple volumes for different scales
+		// Start raycasting
+		vec3 pos = startPos;
+		bool active[NQVTK_RAYCASTER_VOLUMECOUNT];
+		bool insideAtStart[NQVTK_RAYCASTER_VOLUMECOUNT];
+		bool hit[NQVTK_RAYCASTER_VOLUMECOUNT];
+		vec3 refined[NQVTK_RAYCASTER_VOLUMECOUNT];
+		vec3 gradient[NQVTK_RAYCASTER_VOLUMECOUNT];
 		for (int v = 0; v < NQVTK_RAYCASTER_VOLUMECOUNT; ++v) {
-			// If the volume is active, sample it
-			if (active[v]) {
-				float val = getValue(v, pos);
-				bool insideAtPos = isInside(v, val);
-				if (insideAtPos != insideAtStart[v]) {
-					// Found an isosurface, so this is the last step
-					hit[v] = true;
-					hitVol = v;
-					// Refine the hit for this volume
-					refined[v] = refineHitpoint(v, pos, step, insideAtPos);
-					// Compute gradient
-					// NOTE: we can't optimize this out, as volume[v] is currently 
-					// only possible for deterministic v (constant or for-loop)
-					// TODO: replace with kernel / spline-based method?
-					gradient[v] = computeGradient(v, refined[v], 
-						kernelSize, getValue(v, refined[v]));
+			active[v] = getBit(infoBefore.a, v);
+			insideAtStart[v] = getBit(infoBefore.a, v + NQVTK_RAYCASTER_VOLUMECOUNT);
+			hit[v] = false;
+			refined[v] = vec3(0.0);
+			gradient[v] = vec3(0.0);
+		}
+		int hitVol = -1;
+		// For each step along the ray...
+		for (int i = 0; i < numSteps + 1 && hitVol < 0; ++i) {
+			// TODO: loop over features instead of volumes
+			// TODO: we could use multiple volumes for different scales
+			for (int v = 0; v < NQVTK_RAYCASTER_VOLUMECOUNT; ++v) {
+				// If the volume is active, sample it
+				if (active[v]) {
+					float val = getValue(v, pos);
+					bool insideAtPos = isInside(v, val);
+					if (insideAtPos != insideAtStart[v]) {
+						// Found an isosurface, so this is the last step
+						hit[v] = true;
+						hitVol = v;
+						// Refine the hit for this volume
+						refined[v] = refineHitpoint(v, pos, normalStep, insideAtPos);
+						// Compute gradient
+						// NOTE: we can't optimize this out, as volume[v] is currently 
+						// only possible for deterministic v (constant or for-loop)
+						// TODO: replace with kernel / spline-based method?
+						gradient[v] = computeGradient(v, refined[v], 
+							kernelSize, getValue(v, refined[v]));
+					}
 				}
 			}
+			// The last step should stay within the slab
+			if (i == numSteps) {
+				step = endPos - pos;
+				stepLength = length(step);
+			}
+			// Step along the ray
+			pos += step;
 		}
-		// The last step should stay within the slab
-		if (i == numSteps) {
-			step = endPos - pos;
-			stepLength = length(step);
-		}
-		// Step along the ray
-		pos += step;
-	}
 
-	// If we found one or more surfaces, determine the closest one
-	if (hitVol >= 0) {
-		int nearestV = hitVol;
-		float nearestD = length(refined[hitVol] - startPos);
-		for (int v = 0; v < NQVTK_RAYCASTER_VOLUMECOUNT; ++v) {
-			if (hit[v]) {
-				float d = length(refined[v] - startPos);
-				if (d < nearestD) {
-					nearestV = v;
-					nearestD = d;
+		// If we found one or more surfaces, determine the closest one
+		if (hitVol >= 0) {
+			int nearestV = hitVol;
+			float nearestD = length(refined[hitVol] - startPos);
+			for (int v = 0; v < NQVTK_RAYCASTER_VOLUMECOUNT; ++v) {
+				if (hit[v]) {
+					float d = length(refined[v] - startPos);
+					if (d < nearestD) {
+						nearestV = v;
+						nearestD = d;
+					}
 				}
 			}
+			// Update infobuffers based on this hit
+			// The refined position can be on either side of the surface, but
+			// pos is definitely on the other side, but we store refined + step 
+			// instead so we have "accurate" positions in the painter stage
+			info = vec4(refined[nearestV] + normalStep, 
+				setBit(infoBefore.a, 
+					nearestV + NQVTK_RAYCASTER_VOLUMECOUNT, 
+					!insideAtStart[nearestV]));
+			color = vec4(vec3(1.0), 0.7);
+			id = nearestV + NQVTK_RAYCASTER_VOLUMECOUNT;
+			normal = gradient[nearestV];
+			if (dot(normal, step) > 0.0) normal = -normal;
+			normal = gl_NormalMatrix * normal;
 		}
-		// Update infobuffers based on this hit
-		// The refined position can be on either side of the surface, but
-		// pos is definitely on the other side, but we store refined + step 
-		// instead so we have "accurate" positions in the painter stage
-		info = vec4(refined[nearestV] + step, setBit(infoBefore.a, 
-			nearestV + NQVTK_RAYCASTER_VOLUMECOUNT, 
-			!insideAtStart[nearestV]));
-		color = vec4(vec3(1.0), 0.7);
-		id = nearestV + NQVTK_RAYCASTER_VOLUMECOUNT;
-		normal = gradient[nearestV];
-		if (dot(normal, step) > 0.0) normal = -normal;
-		normal = gl_NormalMatrix * normal;
 	}
 
 	// Fill the infobuffer
