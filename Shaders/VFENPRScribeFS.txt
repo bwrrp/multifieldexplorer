@@ -5,7 +5,7 @@
 #endif
 
 uniform sampler2DRectShadow depthBuffer;
-uniform sampler2DRect infoBuffer;
+uniform sampler2DRect info0Previous;
 uniform int layer;
 uniform int objectId;
 
@@ -31,7 +31,7 @@ void main() {
 	// Get the previous info buffer
 	vec4 infoBefore = vec4(0.0);
 	if (layer > 0) {
-		infoBefore = texture2DRect(infoBuffer, r0.xy);
+		infoBefore = texture2DRect(info0Previous, r0.xy);
 	}
 
 	// Coplanarity peeling

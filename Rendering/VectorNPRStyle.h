@@ -1,15 +1,15 @@
 #pragma once
 
-#include <NQVTK/Styles/LayeredRaycaster.h>
+#include <NQVTK/Styles/CustomLayeredRaycaster.h>
 
 #include <NQVTK/Math/Vector3.h>
 
 namespace VFE
 {
-	class VectorNPRStyle : public NQVTK::Styles::LayeredRaycaster
+	class VectorNPRStyle : public NQVTK::Styles::CustomLayeredRaycaster
 	{
 	public:
-		typedef NQVTK::Styles::LayeredRaycaster Superclass;
+		typedef NQVTK::Styles::CustomLayeredRaycaster Superclass;
 
 		VectorNPRStyle();
 		~VectorNPRStyle();

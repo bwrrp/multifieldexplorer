@@ -3,10 +3,10 @@
 #extension GL_EXT_gpu_shader4 : enable
 #endif
 
-uniform sampler2DRect infoPrevious;
-uniform sampler2DRect infoCurrent;
-uniform sampler2DRect normals;
-uniform sampler2DRect colors;
+uniform sampler2DRect info0Previous;
+uniform sampler2DRect info0Current;
+uniform sampler2DRect info1Current;
+uniform sampler2DRect info2Current;
 
 uniform int layer;
 uniform float viewportX;
@@ -198,17 +198,17 @@ void main() {
 	vec4 r0 = gl_FragCoord;
 	r0.x -= viewportX;
 	r0.y -= viewportY;
-	vec4 infoAfter = texture2DRect(infoCurrent, r0.xy);
+	vec4 infoAfter = texture2DRect(info0Current, r0.xy);
 
 	// Discard background
 	if (length(infoAfter) == 0.0) discard;
 
-	vec4 infoBefore = texture2DRect(infoPrevious, r0.xy);
-	vec4 normalid = texture2DRect(normals, r0.xy);
+	vec4 infoBefore = texture2DRect(info0Previous, r0.xy);
+	vec4 normalid = texture2DRect(info1Current, r0.xy);
 	vec3 normal = normalize(normalid.rgb);
 	float gm = length(normalid.rgb);
 	int id = int(normalid.a) - 1;
-	vec4 color = texture2DRect(colors, r0.xy);
+	vec4 color = texture2DRect(info2Current, r0.xy);
 	// Should be set to infoBefore if raycasting hits a surface
 	vec4 info = infoAfter;
 

@@ -3,10 +3,10 @@
 #extension GL_EXT_gpu_shader4 : enable
 #endif
 
-uniform sampler2DRect infoPrevious;
-uniform sampler2DRect infoCurrent;
-uniform sampler2DRect normals;
-uniform sampler2DRect colors;
+uniform sampler2DRect info0Previous;
+uniform sampler2DRect info0Current;
+uniform sampler2DRect info1Current;
+uniform sampler2DRect info2Current;
 
 uniform int layer;
 uniform float viewportX;
@@ -58,14 +58,14 @@ void main() {
 	vec4 r0 = gl_FragCoord;
 	r0.x -= viewportX;
 	r0.y -= viewportY;
-	vec4 infoBefore = texture2DRect(infoPrevious, r0.xy);
+	vec4 infoBefore = texture2DRect(info0Previous, r0.xy);
 	if (layer == 0) infoBefore = vec4(0.0);
-	vec4 infoAfter = texture2DRect(infoCurrent, r0.xy);
-	vec4 normalid = texture2DRect(normals, r0.xy);
+	vec4 infoAfter = texture2DRect(info0Current, r0.xy);
+	vec4 normalid = texture2DRect(info1Current, r0.xy);
 	vec3 normal = normalize(normalid.rgb);
 	float gm = length(normalid.rgb);
 	int id = int(normalid.a) - 1;
-	vec4 color = texture2DRect(colors, r0.xy);
+	vec4 color = texture2DRect(info2Current, r0.xy);
 
 	// Some extra coloring effects
 	if (id == 0) color.a = 0.1;
@@ -114,13 +114,13 @@ void main() {
 	nb[3] = vec2(r0.x, r0.y + 1.0);
 	// Collect samples
 	int nbIds[NB_SIZE];
-	vec3 nbNormals[NB_SIZE];
+	vec3 nbinfo1Current[NB_SIZE];
 	vec3 nbPos[NB_SIZE];
 	for (int i = 0; i < NB_SIZE; ++i) {
-		vec4 normalid = texture2DRect(normals, nb[i]);
+		vec4 normalid = texture2DRect(info1Current, nb[i]);
 		nbIds[i] = int(normalid.a) - 1;
-		nbNormals[i] = normalid.rgb;
-		nbPos[i] = texture2DRect(infoCurrent, nb[i]).rgb;
+		nbinfo1Current[i] = normalid.rgb;
+		nbPos[i] = texture2DRect(info0Current, nb[i]).rgb;
 	}
 
 	// Premultiply colors
