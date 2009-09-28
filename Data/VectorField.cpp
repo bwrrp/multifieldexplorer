@@ -112,6 +112,7 @@ namespace VFE
 		NQVTK::Renderable *bb = new NQVTK::PolyData(vtkbb);
 		NQVTK::Volume *volume = NQVTK::ImageDataVolume::New(vtkvolume);
 		bb->SetParamSet("volume", new NQVTK::VolumeParamSet(volume));
+		bb->opacity = 0.1;
 		scene->AddRenderable(bb);
 
 		// Delete VTK data
