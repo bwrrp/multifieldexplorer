@@ -5,9 +5,6 @@
 #extension GL_EXT_gpu_shader4 : enable
 #endif
 
-// TODO: should be set by the application
-#define VFE_FEATURECOUNT 2
-
 uniform sampler2DRect info0Previous;
 uniform sampler2DRect info0Current;
 uniform sampler2DRect info1Current;
@@ -102,6 +99,7 @@ struct FeatureVector
 
 struct Feature
 {
+	bool enabled;
 	int volume;
 	float startThreshold;
 	float endThreshold;
@@ -232,6 +230,7 @@ void main()
 		Feature features[VFE_FEATURECOUNT];
 		for (int f = 0; f < VFE_FEATURECOUNT; ++f)
 		{
+			features[f].enabled = (f < 2);
 			features[f].volume = 0;
 			features[f].mask.pos = vec3(0.0);
 			features[f].mask.vector = vec3(0.0);
@@ -255,7 +254,8 @@ void main()
 		vec3 gradient[VFE_FEATURECOUNT];
 		for (int f = 0; f < VFE_FEATURECOUNT; ++f)
 		{
-			active[f] = getBit(infoBefore.a, features[f].volume);
+			active[f] = features[f].enabled && 
+				getBit(infoBefore.a, features[f].volume);
 			insideAtStart[f] = getBit(infoBefore.a, f + 
 				max(NQVTK_RAYCASTER_VOLUMECOUNT, VFE_FEATURECOUNT));
 			hit[f] = false;
@@ -269,7 +269,7 @@ void main()
 			// Loop over features
 			for (int f = 0; f < VFE_FEATURECOUNT; ++f)
 			{
-				// If the volume is active, sample it
+				// If the feature is active, test for intersections
 				if (active[f])
 				{
 					float val = getValue(features[f], pos);

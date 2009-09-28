@@ -48,6 +48,8 @@ namespace VFE
 	// ------------------------------------------------------------------------
 	VectorNPRStyle::VectorNPRStyle()
 	{
+		// TODO: adjust this based on the current number of features
+		SetOption("VFE_FEATURECOUNT", 4);
 	}
 
 	// ------------------------------------------------------------------------
