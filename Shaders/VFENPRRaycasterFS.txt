@@ -5,6 +5,9 @@
 #extension GL_EXT_gpu_shader4 : enable
 #endif
 
+// TODO: should be set by the application
+#define VFE_FEATURECOUNT 2
+
 uniform sampler2DRect info0Previous;
 uniform sampler2DRect info0Current;
 uniform sampler2DRect info1Current;
@@ -21,13 +24,13 @@ uniform vec3 volumeOrigin[NQVTK_RAYCASTER_VOLUMECOUNT];
 uniform vec3 volumeSize[NQVTK_RAYCASTER_VOLUMECOUNT];
 uniform vec3 volumeSpacing[NQVTK_RAYCASTER_VOLUMECOUNT];
 
-uniform float tfStart[NQVTK_RAYCASTER_VOLUMECOUNT];
-uniform float tfEnd[NQVTK_RAYCASTER_VOLUMECOUNT];
-
 uniform float stepSize;
 uniform float kernelSize;
 
 uniform vec3 cursorPos;
+
+// TODO: replace this with a normal application-defined feature
+uniform vec3 selectedPos;
 
 // Prototypes from LibUtility
 vec3 phongShading(vec3 matColor, vec3 normal);
@@ -35,14 +38,16 @@ bool getBit(float byte, int bit);
 float setBit(float byte, int bit, bool on);
 
 // Get vector from volume
-vec3 getVector(int v, vec3 pos) {
+vec3 getVector(int v, vec3 pos)
+{
 	vec4 tpos = gl_TextureMatrixInverse[v] * vec4(pos, 1.0);
 	vec3 p = ((tpos.xyz / tpos.w) - volumeOrigin[v]) / volumeSize[v];
 	return vec3(volumeDataShift[v]) + volumeDataScale[v] * texture3D(volume[v], p).xyz;
 }
 
 // Linear Jacobian
-mat3 jacobian(int v, vec3 pos, float delta, vec3 val) {
+mat3 jacobian(int v, vec3 pos, float delta, vec3 val)
+{
 #ifdef NQVTK_RAYCASTER_CENTRALDIFFERENCES
 	vec3 dx = (getVector(v, pos + vec3(0.5 * delta, 0.0, 0.0)) - 
 		getVector(v, pos - vec3(0.5 * delta, 0.0, 0.0))) / delta;
@@ -60,7 +65,8 @@ mat3 jacobian(int v, vec3 pos, float delta, vec3 val) {
 }
 
 // Compute determinant of matrix
-float determinant(mat3 m) {
+float determinant(mat3 m)
+{
 	return m[0][0] * m[1][1] * m[2][2] 
 		+ m[0][1] * m[1][2] * m[2][0] 
 		+ m[0][2] * m[1][0] * m[2][1] 
@@ -94,14 +100,23 @@ struct FeatureVector
 	float growth;
 };
 
-FeatureVector getFeatureVector(int v, vec3 pos)
+struct Feature
+{
+	int volume;
+	float startThreshold;
+	float endThreshold;
+	FeatureVector mask;
+	FeatureVector example;
+};
+
+FeatureVector getFeatureVector(Feature f, vec3 pos)
 {
 	FeatureVector result;
 	result.pos = pos;
-	result.vector = getVector(v, pos);
+	result.vector = getVector(f.volume, pos);
 	result.dir = normalize(result.vector);
 	result.magnitude = length(result.vector);
-	result.growth = growth(v, pos);
+	result.growth = growth(f.volume, pos);
 	return result;
 }
 
@@ -129,64 +144,50 @@ float distance(FeatureVector a, FeatureVector b,
 	return pow(sum, 1.0/power);
 }
 
-float getValue(int v, vec3 pos)
+float getValue(Feature f, vec3 pos)
 {
 	// Get FeatureVectors
-	FeatureVector a = getFeatureVector(v, pos);
-	// TODO: this should probably be computed only once per example feature
-	FeatureVector b = getFeatureVector(v, cursorPos);
-	// TODO: mask should be configurable by user per feature
-	FeatureVector mask;
-	mask.pos = vec3(0.0);
-	mask.vector = vec3(0.0);
-	mask.dir = vec3(0.0);
-	mask.magnitude = 1.0;
-	mask.growth = 0.0;
+	FeatureVector fv = getFeatureVector(f, pos);
 	// Compute distance
-	return distance(a, b, mask, 2.0);
+	return distance(fv, f.example, f.mask, 2.0);
 }
 
 // Compute gradient of the volume
-vec3 computeGradient(int v, vec3 pos, float delta, float val) {
+vec3 computeGradient(Feature f, vec3 pos, float delta, float val)
+{
 #ifdef NQVTK_RAYCASTER_CENTRALDIFFERENCES
-	float dx = (getValue(v, pos + vec3(0.5 * delta, 0.0, 0.0)) - 
-		getValue(v, pos - vec3(0.5 * delta, 0.0, 0.0))) / delta;
-	float dy = (getValue(v, pos + vec3(0.0, 0.5 * delta, 0.0)) - 
-		getValue(v, pos - vec3(0.0, 0.5 * delta, 0.0))) / delta;
-	float dz = (getValue(v, pos + vec3(0.0, 0.0, 0.5 * delta)) - 
-		getValue(v, pos - vec3(0.0, 0.0, 0.5 * delta))) / delta;
+	float dx = (getValue(f, pos + vec3(0.5 * delta, 0.0, 0.0)) - 
+		getValue(f, pos - vec3(0.5 * delta, 0.0, 0.0))) / delta;
+	float dy = (getValue(f, pos + vec3(0.0, 0.5 * delta, 0.0)) - 
+		getValue(f, pos - vec3(0.0, 0.5 * delta, 0.0))) / delta;
+	float dz = (getValue(f, pos + vec3(0.0, 0.0, 0.5 * delta)) - 
+		getValue(f, pos - vec3(0.0, 0.0, 0.5 * delta))) / delta;
 #else
-	float dx = (getValue(v, pos + vec3(delta, 0.0, 0.0)) - val) / delta;
-	float dy = (getValue(v, pos + vec3(0.0, delta, 0.0)) - val) / delta;
-	float dz = (getValue(v, pos + vec3(0.0, 0.0, delta)) - val) / delta;
+	float dx = (getValue(f, pos + vec3(delta, 0.0, 0.0)) - val) / delta;
+	float dy = (getValue(f, pos + vec3(0.0, delta, 0.0)) - val) / delta;
+	float dz = (getValue(f, pos + vec3(0.0, 0.0, delta)) - val) / delta;
 #endif
 	return vec3(dx, dy, dz);
 }
 
-bool oldisInside(int v, float val) {
-	return tfStart[v] <= tfEnd[v] ? 
-		(val > tfStart[v] && val < tfEnd[v]) :
-		(val < tfEnd[v] || val > tfStart[v]);
+bool isInside(Feature f, float val)
+{
+	return f.startThreshold <= f.endThreshold ? 
+		(val > f.startThreshold && val < f.endThreshold) :
+		(val < f.endThreshold || val > f.startThreshold);
 }
 
-bool isInside(int v, float val) {
-	float a = 0.0;
-	float b = 0.5;
-	return a <= b ? 
-		(val > a && val < b) :
-		(val < b || val > a);
-}
-
-vec3 refineHitpoint(int v, vec3 pos, vec3 step, bool insideAtPos) {
+vec3 refineHitpoint(Feature f, vec3 pos, vec3 step, bool insideAtPos)
+{
 	vec3 s = 0.5 * step;
 	vec3 p = pos - s;
 	// 6 refinements should be enough for now
 	for (int r = 0; r < 6; ++r) {
-		float val = getValue(v, p);
+		float val = getValue(f, p);
 		// Halve the step size
 		s *= 0.5;
 		// Step in which direction?
-		if (isInside(v, val) == insideAtPos) {
+		if (isInside(f, val) == insideAtPos) {
 			p -= s;
 		} else {
 			p += s;
@@ -195,7 +196,8 @@ vec3 refineHitpoint(int v, vec3 pos, vec3 step, bool insideAtPos) {
 	return p;
 }
 
-void main() {
+void main()
+{
 	// Get info
 	vec4 r0 = gl_FragCoord;
 	r0.x -= viewportX;
@@ -226,47 +228,77 @@ void main() {
 		float stepLength = stepSize;
 		int numSteps = int(ceil(length(ray) / stepSize));
 
+		// TODO: Features should be provided by the application
+		Feature features[VFE_FEATURECOUNT];
+		for (int f = 0; f < VFE_FEATURECOUNT; ++f)
+		{
+			features[f].volume = 0;
+			features[f].mask.pos = vec3(0.0);
+			features[f].mask.vector = vec3(0.0);
+			features[f].mask.dir = vec3(1.0);
+			features[f].mask.magnitude = 0.0;
+			features[f].mask.growth = 0.0;
+			features[f].startThreshold = 0.0;
+			features[f].endThreshold = 0.5;
+		}
+
+		// Compute example for the and selection features
+		features[0].example = getFeatureVector(features[0], cursorPos);
+		features[1].example = getFeatureVector(features[1], selectedPos);
+
 		// Start raycasting
 		vec3 pos = startPos;
-		bool active[NQVTK_RAYCASTER_VOLUMECOUNT];
-		bool insideAtStart[NQVTK_RAYCASTER_VOLUMECOUNT];
-		bool hit[NQVTK_RAYCASTER_VOLUMECOUNT];
-		vec3 refined[NQVTK_RAYCASTER_VOLUMECOUNT];
-		vec3 gradient[NQVTK_RAYCASTER_VOLUMECOUNT];
-		for (int v = 0; v < NQVTK_RAYCASTER_VOLUMECOUNT; ++v) {
-			active[v] = getBit(infoBefore.a, v);
-			insideAtStart[v] = getBit(infoBefore.a, v + NQVTK_RAYCASTER_VOLUMECOUNT);
-			hit[v] = false;
-			refined[v] = vec3(0.0);
-			gradient[v] = vec3(0.0);
+		bool active[VFE_FEATURECOUNT];
+		bool insideAtStart[VFE_FEATURECOUNT];
+		bool hit[VFE_FEATURECOUNT];
+		vec3 refined[VFE_FEATURECOUNT];
+		vec3 gradient[VFE_FEATURECOUNT];
+		for (int f = 0; f < VFE_FEATURECOUNT; ++f)
+		{
+			active[f] = getBit(infoBefore.a, features[f].volume);
+			insideAtStart[f] = getBit(infoBefore.a, f + 
+				max(NQVTK_RAYCASTER_VOLUMECOUNT, VFE_FEATURECOUNT));
+			hit[f] = false;
+			refined[f] = vec3(0.0);
+			gradient[f] = vec3(0.0);
 		}
-		int hitVol = -1;
+		int hitFeature = -1;
 		// For each step along the ray...
-		for (int i = 0; i < numSteps + 1 && hitVol < 0; ++i) {
-			// TODO: loop over features instead of volumes
-			// TODO: we could use multiple volumes for different scales
-			for (int v = 0; v < NQVTK_RAYCASTER_VOLUMECOUNT; ++v) {
+		for (int i = 0; i < numSteps + 1 && hitFeature < 0; ++i)
+		{
+			// Loop over features
+			for (int f = 0; f < VFE_FEATURECOUNT; ++f)
+			{
 				// If the volume is active, sample it
-				if (active[v]) {
-					float val = getValue(v, pos);
-					bool insideAtPos = isInside(v, val);
-					if (insideAtPos != insideAtStart[v]) {
+				if (active[f])
+				{
+					float val = getValue(features[f], pos);
+					bool insideAtPos = isInside(features[f], val);
+					if (insideAtPos != insideAtStart[f])
+					{
 						// Found an isosurface, so this is the last step
-						hit[v] = true;
-						hitVol = v;
+						hit[f] = true;
+						hitFeature = f;
 						// Refine the hit for this volume
-						refined[v] = refineHitpoint(v, pos, normalStep, insideAtPos);
+						refined[f] = refineHitpoint(features[f], pos, 
+							normalStep, insideAtPos);
 						// Compute gradient
 						// NOTE: we can't optimize this out, as volume[v] is currently 
 						// only possible for deterministic v (constant or for-loop)
 						// TODO: replace with kernel / spline-based method?
-						gradient[v] = computeGradient(v, refined[v], 
-							kernelSize, getValue(v, refined[v]));
+#ifdef NQVTK_RAYCASTER_CENTRALDIFFERENCES
+						gradient[f] = computeGradient(features[f], refined[f], 
+							kernelSize, 0.0);
+#else
+						gradient[f] = computeGradient(features[f], refined[f], 
+							kernelSize, getValue(features[f], refined[f]));
+#endif
 					}
 				}
 			}
 			// The last step should stay within the slab
-			if (i == numSteps) {
+			if (i == numSteps)
+			{
 				step = endPos - pos;
 				stepLength = length(step);
 			}
@@ -275,14 +307,18 @@ void main() {
 		}
 
 		// If we found one or more surfaces, determine the closest one
-		if (hitVol >= 0) {
-			int nearestV = hitVol;
-			float nearestD = length(refined[hitVol] - startPos);
-			for (int v = 0; v < NQVTK_RAYCASTER_VOLUMECOUNT; ++v) {
-				if (hit[v]) {
-					float d = length(refined[v] - startPos);
-					if (d < nearestD) {
-						nearestV = v;
+		if (hitFeature >= 0)
+		{
+			int nearestF = hitFeature;
+			float nearestD = length(refined[hitFeature] - startPos);
+			for (int f = 0; f < VFE_FEATURECOUNT; ++f)
+			{
+				if (hit[f])
+				{
+					float d = length(refined[f] - startPos);
+					if (d < nearestD)
+					{
+						nearestF = f;
 						nearestD = d;
 					}
 				}
@@ -291,13 +327,12 @@ void main() {
 			// The refined position can be on either side of the surface, but
 			// pos is definitely on the other side, but we store refined + step 
 			// instead so we have "accurate" positions in the painter stage
-			info = vec4(refined[nearestV] + normalStep, 
-				setBit(infoBefore.a, 
-					nearestV + NQVTK_RAYCASTER_VOLUMECOUNT, 
-					!insideAtStart[nearestV]));
+			id = nearestF + 
+				max(NQVTK_RAYCASTER_VOLUMECOUNT, VFE_FEATURECOUNT);
+			info = vec4(refined[nearestF] + normalStep, 
+				setBit(infoBefore.a, id, !insideAtStart[nearestF]));
 			color = vec4(vec3(1.0), 0.7);
-			id = nearestV + NQVTK_RAYCASTER_VOLUMECOUNT;
-			normal = gradient[nearestV];
+			normal = gradient[nearestF];
 			if (dot(normal, step) > 0.0) normal = -normal;
 			normal = gl_NormalMatrix * normal;
 		}

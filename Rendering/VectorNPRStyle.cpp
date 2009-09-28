@@ -89,5 +89,8 @@ namespace VFE
 
 		painter->SetUniform3f("cursorPos", 
 			cursorPos.x, cursorPos.y, cursorPos.z);
+
+		painter->SetUniform3f("selectedPos", 
+			selectedPos.x, selectedPos.y, selectedPos.z);
 	}
 }

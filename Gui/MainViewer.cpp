@@ -39,4 +39,11 @@ namespace VFE
 		style->cursorPos = pos;
 		updateGL();
 	}
+
+	// ------------------------------------------------------------------------
+	void MainViewer::SetSelectedPos(NQVTK::Vector3 pos)
+	{
+		style->selectedPos = pos;
+		updateGL();
+	}
 }

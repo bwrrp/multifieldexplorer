@@ -24,6 +24,8 @@ namespace VFE
 
 		connect(ui.sliceViewer, SIGNAL(CursorPosChanged(NQVTK::Vector3)), 
 			ui.mainViewer, SLOT(SetCursorPos(NQVTK::Vector3)));
+		connect(ui.sliceViewer, SIGNAL(PointSelected(NQVTK::Vector3)), 
+			ui.mainViewer, SLOT(SetSelectedPos(NQVTK::Vector3)));
 	}
 
 	// ------------------------------------------------------------------------
@@ -49,7 +51,15 @@ namespace VFE
 
 			ui.mainViewer->GetRenderer()->SetScene(field->GetScene());
 			ui.sliceViewer->GetRenderer()->SetScene(field->GetScene());
+			UpdateViews();
 		}
+	}
+
+	// ------------------------------------------------------------------------
+	void MainWindow::UpdateViews()
+	{
+		ui.mainViewer->updateGL();
+		ui.sliceViewer->updateGL();
 	}
 
 	// ------------------------------------------------------------------------
@@ -85,5 +95,6 @@ namespace VFE
 	{
 		ui.mainViewer->Initialize();
 		ui.sliceViewer->Initialize();
+		UpdateViews();
 	}
 }

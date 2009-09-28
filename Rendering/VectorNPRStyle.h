@@ -25,5 +25,6 @@ namespace VFE
 		virtual void UpdatePainterParameters(GLProgram *painter);
 
 		NQVTK::Vector3 cursorPos;
+		NQVTK::Vector3 selectedPos;
 	};
 }

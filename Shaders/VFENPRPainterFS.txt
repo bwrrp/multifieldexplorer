@@ -5,6 +5,9 @@
 #extension GL_EXT_gpu_shader4 : enable
 #endif
 
+// TODO: should be set by the application
+#define VFE_FEATURECOUNT 2
+
 uniform sampler2DRect info0Previous;
 uniform sampler2DRect info0Current;
 uniform sampler2DRect info1Current;
@@ -199,8 +202,8 @@ vec4 shadeFragment(sample fragment)
 	}
 	//*/
 
-	/* Test: vector direction visualization
-	if (fragment.id == 1)
+	//* Test: vector direction visualization
+	if (fragment.id >= max(NQVTK_RAYCASTER_VOLUMECOUNT, VFE_FEATURECOUNT))
 	{
 		vec4 tpos = gl_TextureMatrixInverse[0] * vec4(fragment.pos, 1.0);
 		vec3 p = ((tpos.xyz / tpos.w) - volumeOrigin[0]) / volumeSize[0];

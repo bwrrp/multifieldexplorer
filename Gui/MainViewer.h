@@ -20,6 +20,7 @@ namespace VFE
 
 	public slots:
 		void SetCursorPos(NQVTK::Vector3);
+		void SetSelectedPos(NQVTK::Vector3);
 
 	private:
 		VectorNPRStyle *style;
