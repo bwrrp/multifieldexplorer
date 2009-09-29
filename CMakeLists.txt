@@ -85,6 +85,7 @@ SET( ${ProjectName}_Gui_Classes
 
 SET( ${ProjectName}_Data_Classes
 	VectorField
+	Feature
 )
 
 SET( ${ProjectName}_Rendering_Classes
