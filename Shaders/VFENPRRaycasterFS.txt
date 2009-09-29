@@ -237,6 +237,8 @@ void main()
 	int id = int(normalid.a) - 1;
 	vec4 color = texture2DRect(info2Current, r0.xy);
 	vec4 info = infoAfter;
+	// TODO: adjust for any non-volume meshes in the scene
+	int fidbase = NQVTK_RAYCASTER_VOLUMECOUNT;
 
 	// Raycast into the slab
 	vec3 startPos = infoBefore.rgb;
@@ -283,8 +285,7 @@ void main()
 		{
 			active[f] = features[f].enabled && 
 				getBit(infoBefore.a, features[f].volume);
-			insideAtStart[f] = getBit(infoBefore.a, f + 
-				max(NQVTK_RAYCASTER_VOLUMECOUNT, VFE_FEATURECOUNT));
+			insideAtStart[f] = getBit(infoBefore.a, f + fidbase);
 			hit[f] = false;
 			refined[f] = vec3(0.0);
 			gradient[f] = vec3(0.0);
@@ -354,8 +355,7 @@ void main()
 			// The refined position can be on either side of the surface, but
 			// pos is definitely on the other side, but we store refined + step 
 			// instead so we have "accurate" positions in the painter stage
-			id = nearestF + 
-				max(NQVTK_RAYCASTER_VOLUMECOUNT, VFE_FEATURECOUNT);
+			id = nearestF + fidbase;
 			info = vec4(refined[nearestF] + normalStep, 
 				setBit(infoBefore.a, id, !insideAtStart[nearestF]));
 			color = vec4(vec3(1.0), 0.7);

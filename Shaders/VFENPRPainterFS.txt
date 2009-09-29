@@ -57,7 +57,8 @@ float dotTexture(vec2 c)
 
 bool ignoreObject(int id)
 {
-	return id < max(NQVTK_RAYCASTER_VOLUMECOUNT, VFE_FEATURECOUNT);
+	// TODO: adjust for any non-volume meshes in the scene
+	return id < NQVTK_RAYCASTER_VOLUMECOUNT;
 }
 
 struct sample
@@ -127,7 +128,8 @@ vec4 shadeFragment(sample fragment)
 {
 	vec4 color = fragment.color;
 
-	int fidbase = max(NQVTK_RAYCASTER_VOLUMECOUNT, VFE_FEATURECOUNT);
+	// TODO: adjust for any non-volume meshes in the scene
+	int fidbase = NQVTK_RAYCASTER_VOLUMECOUNT;
 
 	// Some extra coloring effects for volume features
 	if (length(fragment.pos) > 0.0)

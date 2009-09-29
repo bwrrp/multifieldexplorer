@@ -50,6 +50,7 @@ namespace VFE
 	{
 		// TODO: adjust this based on the current number of features
 		SetOption("VFE_FEATURECOUNT", 4);
+		SetOption("NQVTK_BITMASK_BITS", 8);
 	}
 
 	// ------------------------------------------------------------------------
