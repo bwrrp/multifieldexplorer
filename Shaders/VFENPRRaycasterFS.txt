@@ -26,6 +26,28 @@ uniform float kernelSize;
 
 uniform vec3 cursorPos;
 
+struct FeatureVector
+{
+	vec3 position;
+	vec3 vector;
+	vec3 direction;
+	float magnitude;
+	float growth;
+	float divergence;
+	vec3 curl;
+};
+
+struct Feature
+{
+	bool enabled;
+	float startThreshold;
+	float endThreshold;
+	FeatureVector mask;
+	FeatureVector example;
+};
+
+uniform Feature userFeatures[VFE_FEATURECOUNT];
+
 // TODO: replace this with a normal application-defined feature
 uniform vec3 selectedPos;
 
@@ -99,42 +121,16 @@ float growth(mat3 j)
 	return g + 0.5;
 }
 
-struct FeatureVector
-{
-	vec3 pos;
-	vec3 vector;
-	vec3 dir;
-	float magnitude;
-	float growth;
-	float divergence;
-	vec3 curl;
-};
-
-struct Feature
-{
-	bool enabled;
-	int volume;
-	float startThreshold;
-	float endThreshold;
-	FeatureVector mask;
-	FeatureVector example;
-};
-
 FeatureVector getFeatureVector(Feature f, vec3 pos)
 {
 	FeatureVector result;
-	result.pos = pos;
-	result.vector = getVector(f.volume, pos);
-	result.dir = normalize(result.vector);
+	result.position = pos;
+	result.vector = getVector(0, pos);
+	result.direction = normalize(result.vector);
 	result.magnitude = length(result.vector);
 
 	// Compute derivatives
-#ifdef NQVTK_RAYCASTER_CENTRALDIFFERENCES
-	vec3 val = vec3(0.0);
-#else
-	vec3 val = getVector(f.volume, pos);
-#endif
-	mat3 j = jacobian(f.volume, pos, kernelSize, val);
+	mat3 j = jacobian(0, pos, kernelSize, result.vector);
 	result.growth = growth(j);
 	result.divergence = trace(j);
 	result.curl = curl(j);
@@ -147,13 +143,13 @@ float distance(FeatureVector a, FeatureVector b,
 	float sum = 0.0;
 	vec3 v;
 	// pos
-	v = mask.pos * pow(a.pos - b.pos, vec3(power));
+	v = mask.position * pow(a.position - b.position, vec3(power));
 	sum += v.x + v.y + v.z;
 	// vector
 	v = mask.vector * pow(a.vector - b.vector, vec3(power));
 	sum += v.x + v.y + v.z;
 	// dir
-	v = mask.dir * pow(a.dir - b.dir, vec3(power));
+	v = mask.direction * pow(a.direction - b.direction, vec3(power));
 	sum += v.x + v.y + v.z;
 	// magnitude
 	sum += mask.magnitude * pow(a.magnitude - b.magnitude, power);
@@ -257,15 +253,18 @@ void main()
 		Feature features[VFE_FEATURECOUNT];
 		for (int f = 0; f < VFE_FEATURECOUNT; ++f)
 		{
+			features[f] = userFeatures[f];
 			features[f].enabled = (f < 2);
-			features[f].volume = 0;
-			features[f].mask.pos = vec3(0.0);
-			features[f].mask.vector = vec3(0.0);
-			features[f].mask.dir = vec3(1.0);
-			features[f].mask.magnitude = 0.0;
-			features[f].mask.growth = 0.0;
-			features[f].mask.divergence = 0.0;
-			features[f].mask.curl = vec3(0.0);
+			if (f < 1)
+			{
+				features[f].mask.position = vec3(0.0);
+				features[f].mask.vector = vec3(0.0);
+				features[f].mask.direction = vec3(1.0);
+				features[f].mask.magnitude = 0.0;
+				features[f].mask.growth = 0.0;
+				features[f].mask.divergence = 0.0;
+				features[f].mask.curl = vec3(0.0);
+			}
 			features[f].startThreshold = 0.0;
 			features[f].endThreshold = 0.5;
 		}
@@ -281,10 +280,16 @@ void main()
 		bool hit[VFE_FEATURECOUNT];
 		vec3 refined[VFE_FEATURECOUNT];
 		vec3 gradient[VFE_FEATURECOUNT];
+		// Conditional sampler indices are not supported by current 
+		// hardware, so we compute all features from volume 0...
+		// Code-generation for the getFeatureVector function could help
+		// for multi-field data using multiple volumes. For multi-scale 
+		// we have to treat each scale's properties as separate 
+		// dimensions and always sample all of them...
+		bool inVolume = getBit(infoBefore.a, 0);
 		for (int f = 0; f < VFE_FEATURECOUNT; ++f)
 		{
-			active[f] = features[f].enabled && 
-				getBit(infoBefore.a, features[f].volume);
+			active[f] = features[f].enabled && inVolume;
 			insideAtStart[f] = getBit(infoBefore.a, f + fidbase);
 			hit[f] = false;
 			refined[f] = vec3(0.0);
