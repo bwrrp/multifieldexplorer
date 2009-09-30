@@ -40,10 +40,12 @@ struct FeatureVector
 struct Feature
 {
 	bool enabled;
+	vec3 examplePos;
+	FeatureVector example;
+	FeatureVector mask;
 	float startThreshold;
 	float endThreshold;
-	FeatureVector mask;
-	FeatureVector example;
+
 };
 
 uniform Feature userFeatures[VFE_FEATURECOUNT];
@@ -255,7 +257,7 @@ void main()
 		{
 			features[f] = userFeatures[f];
 			features[f].enabled = (f < 2);
-			if (f < 1)
+			if (f < 2)
 			{
 				features[f].mask.position = vec3(0.0);
 				features[f].mask.vector = vec3(0.0);
@@ -269,9 +271,19 @@ void main()
 			features[f].endThreshold = 0.5;
 		}
 
-		// Compute example for the and selection features
-		features[0].example = getFeatureVector(features[0], cursorPos);
-		features[1].example = getFeatureVector(features[1], selectedPos);
+		// TODO: this should be handled by the application as well
+		features[0].examplePos = cursorPos;
+		features[1].examplePos = selectedPos;
+
+		// Compute examples
+		for (int f = 0; f < VFE_FEATURECOUNT; ++f)
+		{
+			if (features[f].enabled)
+			{
+				features[f].example = getFeatureVector(
+					features[f], features[f].examplePos);
+			}
+		}
 
 		// Start raycasting
 		vec3 pos = startPos;
