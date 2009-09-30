@@ -1,5 +1,4 @@
-#include "GLBlaat/GL.h"
-
+#include <GLBlaat/GL.h>
 #include "SliceViewer.h"
 #include "SliceViewer.moc"
 

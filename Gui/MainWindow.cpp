@@ -1,5 +1,3 @@
-#include "GLBlaat/GL.h"
-
 #include "MainWindow.h"
 #include "MainWindow.moc"
 

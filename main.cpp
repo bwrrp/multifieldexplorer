@@ -1,6 +1,3 @@
-// TODO: remove this later, hack for include order issues
-#include "GLBlaat/GL.h"
-
 #include <QApplication>
 #include <QStringList>
 

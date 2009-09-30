@@ -15,12 +15,10 @@ ENDIF( COMMAND cmake_policy )
 # We need NQVTK
 FIND_PACKAGE( NQVTK REQUIRED )
 INCLUDE( ${NQVTK_USE_FILE} )
-SET( NQVTK_lib ${NQVTK_LIBRARIES} )
 
 # We need NQVTKGui
 FIND_PACKAGE( NQVTKGui REQUIRED )
 INCLUDE( ${NQVTKGui_USE_FILE} )
-SET( NQVTKGui_lib ${NQVTKGui_LIBRARIES} )
 
 # We need VTK for its readers
 FIND_PACKAGE( VTK REQUIRED )
@@ -32,21 +30,18 @@ SET( VTK_lib
 # We need Qt
 FIND_PACKAGE( Qt4 REQUIRED )
 SET( QT_USE_QTMAIN TRUE )
-SET( QT_USE_QTNETWORK TRUE )
 SET( QT_USE_QTOPENGL TRUE )
-SET( QT_USE_QTXML TRUE )
 INCLUDE( ${QT_USE_FILE} )
 # Required Qt modules
 SET( QT_lib
 	${QT_LIBRARIES}
 	${QT_QTMAIN_LIBRARIES}
-	${QT_QTOPENGL_LIBRARIES}
 )
 
 # The complete set of libraries required by the project
 SET( ${ProjectName}_Libraries
-	${NQVTK_lib}
-	${NQVTKGui_lib}
+	${NQVTK_LIBRARIES}
+	${NQVTKGui_LIBRARIES}
 	${VTK_lib}
 	${QT_lib}
 )

@@ -1,5 +1,3 @@
-#include "GLBlaat/GL.h"
-
 #include "VectorNPRStyle.h"
 
 #include "GLBlaat/GLProgram.h"
