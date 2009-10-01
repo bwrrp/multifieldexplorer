@@ -29,7 +29,8 @@ namespace VFE
 	public:
 		FeatureVector();
 
-		void SetupProgram(GLProgram *program, const std::string &feature);
+		void SetupProgram(GLProgram *program, 
+			const std::string &feature) const;
 
 	protected:
 		// Property descriptions are shared by all FeatureVectors
@@ -47,6 +48,10 @@ namespace VFE
 		float endThreshold;
 		// TODO: add visualization style parameters
 
-		void SetupProgram(GLProgram *program, int index);
+		Feature();
+
+		void SetupProgram(GLProgram *program, int index) const;
+
+		// TODO: add a way to generate UI for controlling the feature
 	};
 }

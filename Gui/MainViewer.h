@@ -6,6 +6,7 @@
 
 namespace VFE
 {
+	class VectorField;
 	class VectorNPRStyle;
 
 	class MainViewer : public NQVTKWidget
@@ -16,6 +17,8 @@ namespace VFE
 		MainViewer(QWidget *parent = 0);
 		virtual ~MainViewer();
 
+		void SetField(VectorField *field);
+
 		VectorNPRStyle *GetStyle() { return style; }
 
 	public slots:
@@ -23,6 +26,7 @@ namespace VFE
 		void SetSelectedPos(NQVTK::Vector3);
 
 	private:
+		VectorField *field;
 		VectorNPRStyle *style;
 	};
 }

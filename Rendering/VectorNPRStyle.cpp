@@ -11,6 +11,8 @@
 #include <sstream>
 #include <string>
 
+#include "Data/VectorField.h"
+
 namespace VFE
 {
 	// ------------------------------------------------------------------------
@@ -44,7 +46,7 @@ namespace VFE
 	}
 
 	// ------------------------------------------------------------------------
-	VectorNPRStyle::VectorNPRStyle()
+	VectorNPRStyle::VectorNPRStyle() : field(0)
 	{
 		// TODO: adjust this based on the current number of features
 		SetOption("VFE_FEATURECOUNT", 4);
@@ -88,10 +90,12 @@ namespace VFE
 	{
 		Superclass::UpdatePainterParameters(painter);
 
-		painter->SetUniform3f("cursorPos", 
-			cursorPos.x, cursorPos.y, cursorPos.z);
+		if (field) field->SetupFeatures(painter);
+	}
 
-		painter->SetUniform3f("selectedPos", 
-			selectedPos.x, selectedPos.y, selectedPos.z);
+	// ------------------------------------------------------------------------
+	void VectorNPRStyle::SetField(const VectorField *field)
+	{
+		this->field = field;
 	}
 }

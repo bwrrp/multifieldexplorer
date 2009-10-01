@@ -85,6 +85,10 @@ namespace VFE
 	// ------------------------------------------------------------------------
 	VectorField::VectorField(NQVTK::Scene *scene) : scene(scene)
 	{
+		// Create cursor feature
+		features.push_back(Feature());
+		// Create selection feature
+		features.push_back(Feature());
 	}
 
 	// ------------------------------------------------------------------------
@@ -123,5 +127,34 @@ namespace VFE
 		VectorField *vf = new VectorField(scene);
 
 		return vf;
+	}
+
+	// ------------------------------------------------------------------------
+	int VectorField::GetNumberOfFeatures() const
+	{
+		return features.size();
+	}
+
+	// ------------------------------------------------------------------------
+	void VectorField::SetupFeatures(GLProgram *program) const
+	{
+		int numFeatures = GetNumberOfFeatures();
+		for (int i = 0; i < numFeatures; ++i)
+		{
+			features[i].SetupProgram(program, i);
+		}
+	}
+
+	// ------------------------------------------------------------------------
+	void VectorField::SetCursorPos(const NQVTK::Vector3 &pos)
+	{
+		features[0].examplePos = pos;
+	}
+
+	// ------------------------------------------------------------------------
+	void VectorField::SetSelectedPos(const NQVTK::Vector3 &pos)
+	{
+		// TODO: replace this when we have UI dealing with multiple features
+		features[1].examplePos = pos;
 	}
 }

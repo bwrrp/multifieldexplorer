@@ -7,12 +7,14 @@
 #include <NQVTK/Rendering/ArcballCamera.h>
 #include <NQVTK/Rendering/LayeredRaycastingRenderer.h>
 
+#include "Data/VectorField.h"
+
 #include "Rendering/VectorNPRStyle.h"
 
 namespace VFE
 {
 	// ------------------------------------------------------------------------
-	MainViewer::MainViewer(QWidget *parent) : NQVTKWidget(parent)
+	MainViewer::MainViewer(QWidget *parent) : NQVTKWidget(parent), field(0)
 	{
 		NQVTK::LayeredRaycastingRenderer *renderer = 
 			new NQVTK::LayeredRaycastingRenderer();
@@ -33,16 +35,30 @@ namespace VFE
 	}
 
 	// ------------------------------------------------------------------------
+	void MainViewer::SetField(VectorField *field)
+	{
+		this->field = field;
+		GetRenderer()->SetScene(field->GetScene());
+		style->SetField(field);
+	}
+
+	// ------------------------------------------------------------------------
 	void MainViewer::SetCursorPos(NQVTK::Vector3 pos)
 	{
-		style->cursorPos = pos;
-		updateGL();
+		if (field)
+		{
+			field->SetCursorPos(pos);
+			updateGL();
+		}
 	}
 
 	// ------------------------------------------------------------------------
 	void MainViewer::SetSelectedPos(NQVTK::Vector3 pos)
 	{
-		style->selectedPos = pos;
-		updateGL();
+		if (field)
+		{
+			field->SetSelectedPos(pos);
+			updateGL();
+		}
 	}
 }

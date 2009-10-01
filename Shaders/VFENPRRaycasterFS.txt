@@ -24,8 +24,6 @@ uniform vec3 volumeSpacing[NQVTK_RAYCASTER_VOLUMECOUNT];
 uniform float stepSize;
 uniform float kernelSize;
 
-uniform vec3 cursorPos;
-
 struct FeatureVector
 {
 	vec3 position;
@@ -49,9 +47,6 @@ struct Feature
 };
 
 uniform Feature userFeatures[VFE_FEATURECOUNT];
-
-// TODO: replace this with a normal application-defined feature
-uniform vec3 selectedPos;
 
 // Prototypes from LibUtility
 vec3 phongShading(vec3 matColor, vec3 normal);
@@ -267,13 +262,7 @@ void main()
 				features[f].mask.divergence = 0.0;
 				features[f].mask.curl = vec3(0.0);
 			}
-			features[f].startThreshold = 0.0;
-			features[f].endThreshold = 0.5;
 		}
-
-		// TODO: this should be handled by the application as well
-		features[0].examplePos = cursorPos;
-		features[1].examplePos = selectedPos;
 
 		// Compute examples
 		for (int f = 0; f < VFE_FEATURECOUNT; ++f)

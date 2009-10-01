@@ -57,7 +57,7 @@ namespace VFE
 
 	// ------------------------------------------------------------------------
 	void FeatureVector::SetupProgram(GLProgram *program, 
-		const std::string &feature)
+		const std::string &feature) const
 	{
 		int v = 0;
 		for (std::vector<Property>::const_iterator it = properties.begin(); 
@@ -78,7 +78,15 @@ namespace VFE
 	}
 
 	// ------------------------------------------------------------------------
-	void Feature::SetupProgram(GLProgram *program, int index)
+	Feature::Feature()
+	{
+		enabled = true;
+		startThreshold = 0.0;
+		endThreshold = 0.5;
+	}
+
+	// ------------------------------------------------------------------------
+	void Feature::SetupProgram(GLProgram *program, int index) const
 	{
 		// Get the name of this feature
 		std::ostringstream feature;

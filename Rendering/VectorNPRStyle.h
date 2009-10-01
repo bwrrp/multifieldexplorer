@@ -6,6 +6,8 @@
 
 namespace VFE
 {
+	class VectorField;
+
 	class VectorNPRStyle : public NQVTK::Styles::CustomLayeredRaycaster
 	{
 	public:
@@ -24,7 +26,9 @@ namespace VFE
 		// Used for both the painter and the raycaster
 		virtual void UpdatePainterParameters(GLProgram *painter);
 
-		NQVTK::Vector3 cursorPos;
-		NQVTK::Vector3 selectedPos;
+		void SetField(const VectorField *field);
+
+	protected:
+		const VectorField *field;
 	};
 }
