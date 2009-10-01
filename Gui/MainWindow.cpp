@@ -49,12 +49,12 @@ namespace VFE
 
 			ui.mainViewer->SetField(field);
 			ui.sliceViewer->GetRenderer()->SetScene(field->GetScene());
-			UpdateViews();
+			RedrawViewers();
 		}
 	}
 
 	// ------------------------------------------------------------------------
-	void MainWindow::UpdateViews()
+	void MainWindow::RedrawViewers()
 	{
 		ui.mainViewer->updateGL();
 		ui.sliceViewer->updateGL();
@@ -93,6 +93,6 @@ namespace VFE
 	{
 		ui.mainViewer->Initialize();
 		ui.sliceViewer->Initialize();
-		UpdateViews();
+		RedrawViewers();
 	}
 }

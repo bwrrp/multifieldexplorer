@@ -22,7 +22,7 @@ namespace VFE
 		void LoadField(const QString &filename);
 
 	public slots:
-		void UpdateViews();
+		void RedrawViewers();
 
 	protected:
 		Ui::MainWindow ui;
