@@ -74,6 +74,7 @@ SET( ${ProjectName}_Gui_Classes
 	MainViewer
 	SliceViewer
 	RenderControls
+	FeatureWidget
 
 	SelectionSliceViewInteractor
 )
