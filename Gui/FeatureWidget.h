@@ -17,7 +17,7 @@ namespace VFE
 
 	public slots:
 		void SetFeature(Feature *feature);
-		void UpdateView();
+		void UpdateView(Feature *updatedFeature = 0);
 
 	signals:
 		void Updated();

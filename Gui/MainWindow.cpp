@@ -26,11 +26,13 @@ namespace VFE
 		connect(ui.sliceViewer, SIGNAL(PointSelected(NQVTK::Vector3)), 
 			ui.featureList, SLOT(SetSelectedPos(NQVTK::Vector3)));
 
-		connect(ui.featureList, SIGNAL(Updated()), 
-			this, SLOT(RedrawViewers()));
-
 		connect(ui.featureList, SIGNAL(FeatureSelected(Feature*)), 
 			ui.featureEditor, SLOT(SetFeature(Feature*)));
+		connect(ui.featureList, SIGNAL(FeatureUpdated(Feature*)), 
+			ui.featureEditor, SLOT(UpdateView(Feature*)));
+
+		connect(ui.featureList, SIGNAL(Updated()), 
+			this, SLOT(RedrawViewers()));
 		connect(ui.featureEditor, SIGNAL(Updated()), 
 			this, SLOT(RedrawViewers()));
 	}

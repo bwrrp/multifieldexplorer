@@ -26,6 +26,7 @@ namespace VFE
 
 	signals:
 		void FeatureSelected(Feature *feature);
+		void FeatureUpdated(Feature *feature);
 		void Updated();
 
 	protected:

@@ -23,24 +23,27 @@ namespace VFE
 	}
 
 	// ------------------------------------------------------------------------
-	void FeatureWidget::UpdateView()
+	void FeatureWidget::UpdateView(Feature *updatedFeature)
 	{
-		if (feature)
+		if (updatedFeature == 0 || updatedFeature == feature)
 		{
-			// Update widgets
-			ui.enabled->setChecked(feature->enabled);
-			ui.startThreshold->setValue(feature->startThreshold * 100);
-			ui.endThreshold->setValue(feature->endThreshold * 100);
-			ui.examplePosReadout->setText(QString("<%1, %2, %3>")
-				.arg(feature->examplePos.x)
-				.arg(feature->examplePos.y)
-				.arg(feature->examplePos.z));
-			// TODO: update state of property widgets
-			setEnabled(true);
-		}
-		else
-		{
-			setEnabled(false);
+			if (feature)
+			{
+				// Update widgets
+				ui.enabled->setChecked(feature->enabled);
+				ui.startThreshold->setValue(feature->startThreshold * 100);
+				ui.endThreshold->setValue(feature->endThreshold * 100);
+				ui.examplePosReadout->setText(QString("<%1, %2, %3>")
+					.arg(feature->examplePos.x)
+					.arg(feature->examplePos.y)
+					.arg(feature->examplePos.z));
+				// TODO: update state of property widgets
+				setEnabled(true);
+			}
+			else
+			{
+				setEnabled(false);
+			}
 		}
 	}
 

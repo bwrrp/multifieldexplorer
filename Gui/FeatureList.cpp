@@ -105,6 +105,9 @@ namespace VFE
 			{
 				emit Updated();
 			}
+			// Emit signal so the editor can update if necessary
+			// This is a bit of a hack, but ok...
+			emit FeatureUpdated(f);
 		}
 	}
 
