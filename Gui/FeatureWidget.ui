@@ -14,6 +14,9 @@
    <string>Edit Feature</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
+   <property name="margin">
+    <number>0</number>
+   </property>
    <item row="1" column="0" colspan="5">
     <widget class="QGroupBox" name="propertiesGroup">
      <property name="sizePolicy">

@@ -10,6 +10,7 @@ namespace VFE
 	{
 		ui.setupUi(this);
 		// TODO: create property widgets
+		SetFeature(0);
 	}
 
 	// ------------------------------------------------------------------------
