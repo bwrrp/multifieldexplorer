@@ -47,6 +47,7 @@ struct Feature
 };
 
 uniform Feature userFeatures[VFE_FEATURECOUNT];
+uniform int numActiveFeatures;
 
 // Prototypes from LibUtility
 vec3 phongShading(vec3 matColor, vec3 normal);
@@ -255,7 +256,15 @@ void main()
 		Feature features[VFE_FEATURECOUNT];
 		for (int f = 0; f < VFE_FEATURECOUNT; ++f)
 		{
-			features[f] = userFeatures[f];
+			// Copy feature definition
+			if (f < numActiveFeatures)
+			{
+				features[f] = userFeatures[f];
+			}
+			else
+			{
+				features[f].enabled = false;
+			}
 
 			// TODO: Remove this once we can set masks from the GUI
 			features[f].mask.position = vec3(0.0);

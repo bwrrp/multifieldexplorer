@@ -4,6 +4,8 @@
 
 #include <vector>
 
+#include <QObject>
+
 #include "Feature.h"
 
 class GLProgram;
@@ -15,8 +17,10 @@ namespace NQVTK
 
 namespace VFE
 {
-	class VectorField
+	class VectorField : public QObject
 	{
+		Q_OBJECT;
+
 	public:
 		static VectorField *Load(const QString &filename);
 
@@ -26,10 +30,15 @@ namespace VFE
 
 		int GetNumberOfFeatures() const;
 		Feature *GetFeature(int i);
+		void AddFeature();
+		void RemoveFeature(int i);
+
 		void SetupFeatures(GLProgram *program) const;
 
-		void SetCursorPos(const NQVTK::Vector3 &pos);
-		void SetSelectedPos(const NQVTK::Vector3 &pos);
+		void EmitFeatureUpdated(int num);
+
+	signals:
+		void FeatureUpdated(int num);
 
 	protected:
 		VectorField(NQVTK::Scene *scene);

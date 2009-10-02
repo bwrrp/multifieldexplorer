@@ -16,7 +16,15 @@ namespace VFE
 	// ------------------------------------------------------------------------
 	void FeatureWidget::SetFeature(Feature *feature)
 	{
+		if (this->feature == feature) return;
+
 		this->feature = feature;
+		UpdateView();
+	}
+
+	// ------------------------------------------------------------------------
+	void FeatureWidget::UpdateView()
+	{
 		if (feature)
 		{
 			// Update widgets

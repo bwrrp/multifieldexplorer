@@ -21,10 +21,6 @@ namespace VFE
 
 		VectorNPRStyle *GetStyle() { return style; }
 
-	public slots:
-		void SetCursorPos(NQVTK::Vector3);
-		void SetSelectedPos(NQVTK::Vector3);
-
 	private:
 		VectorField *field;
 		VectorNPRStyle *style;

@@ -41,24 +41,4 @@ namespace VFE
 		GetRenderer()->SetScene(field->GetScene());
 		style->SetField(field);
 	}
-
-	// ------------------------------------------------------------------------
-	void MainViewer::SetCursorPos(NQVTK::Vector3 pos)
-	{
-		if (field)
-		{
-			field->SetCursorPos(pos);
-			updateGL();
-		}
-	}
-
-	// ------------------------------------------------------------------------
-	void MainViewer::SetSelectedPos(NQVTK::Vector3 pos)
-	{
-		if (field)
-		{
-			field->SetSelectedPos(pos);
-			updateGL();
-		}
-	}
 }

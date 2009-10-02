@@ -1,4 +1,5 @@
 #include "VectorField.h"
+#include "VectorField.moc"
 
 #include <NQVTK/ParamSets/VolumeParamSet.h>
 
@@ -6,6 +7,8 @@
 #include <NQVTK/Rendering/ImageDataVolume.h>
 
 #include <NQVTK/Renderables/PolyData.h>
+
+#include <GLBlaat/GLProgram.h>
 
 #include <vtkCubeSource.h>
 #include <vtkImageData.h>
@@ -143,9 +146,23 @@ namespace VFE
 	}
 
 	// ------------------------------------------------------------------------
+	void VectorField::AddFeature()
+	{
+		features.push_back(Feature());
+	}
+
+	// ------------------------------------------------------------------------
+	void VectorField::RemoveFeature(int i)
+	{
+		if (i < 0 || i >= GetNumberOfFeatures()) return;
+		features.erase(features.begin() + i);
+	}
+
+	// ------------------------------------------------------------------------
 	void VectorField::SetupFeatures(GLProgram *program) const
 	{
 		int numFeatures = GetNumberOfFeatures();
+		program->SetUniform1i("numActiveFeatures", numFeatures);
 		for (int i = 0; i < numFeatures; ++i)
 		{
 			features[i].SetupProgram(program, i);
@@ -153,15 +170,8 @@ namespace VFE
 	}
 
 	// ------------------------------------------------------------------------
-	void VectorField::SetCursorPos(const NQVTK::Vector3 &pos)
+	void VectorField::EmitFeatureUpdated(int num)
 	{
-		features[0].examplePos = pos;
-	}
-
-	// ------------------------------------------------------------------------
-	void VectorField::SetSelectedPos(const NQVTK::Vector3 &pos)
-	{
-		// TODO: replace this when we have UI dealing with multiple features
-		features[1].examplePos = pos;
+		emit FeatureUpdated(num);
 	}
 }

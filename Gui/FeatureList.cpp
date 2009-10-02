@@ -4,6 +4,7 @@
 #include "Data/Feature.h"
 #include "Data/VectorField.h"
 
+#include <QListWidgetItem>
 #include <QString>
 
 #include <cassert>
@@ -11,7 +12,7 @@
 namespace VFE
 {
 	// ------------------------------------------------------------------------
-	FeatureList::FeatureList(QWidget *parent) : QWidget(parent)
+	FeatureList::FeatureList(QWidget *parent) : QWidget(parent), field(0)
 	{
 		ui.setupUi(this);
 		SetField(0);
@@ -20,25 +21,90 @@ namespace VFE
 	// ------------------------------------------------------------------------
 	void FeatureList::SetField(VectorField *field)
 	{
+		if (this->field)
+		{
+			disconnect(this->field, SIGNAL(FeatureUpdated(int)), 
+				this, SLOT(UpdateFeature(int)));
+		}
 		this->field = field;
 		if (field)
 		{
 			int numFeatures = field->GetNumberOfFeatures();
-			assert(numFeatures > 0);
-			ui.featureList->addItem("Cursor");
-			for (int i = 1; i < numFeatures; ++i)
+			for (int i = 0; i < numFeatures; ++i)
 			{
 				Feature *f = field->GetFeature(i);
-				ui.featureList->addItem(QString("<%1, %2, %3>")
-					.arg(f->examplePos.x)
-					.arg(f->examplePos.y)
-					.arg(f->examplePos.z));
+				if (i == 0)
+				{
+					ui.featureList->addItem("Cursor");
+				}
+				else
+				{
+					ui.featureList->addItem(QString("<%1, %2, %3>")
+						.arg(f->examplePos.x)
+						.arg(f->examplePos.y)
+						.arg(f->examplePos.z));
+				}
 			}
+			connect(this->field, SIGNAL(FeatureUpdated(int)), 
+				this, SLOT(UpdateFeature(int)));
+			ui.addFeature->setEnabled(true);
 		}
 		else
 		{
 			ui.featureList->clear();
-			emit FeatureSelected(0);
+			ui.addFeature->setEnabled(false);
+			ui.removeFeature->setEnabled(false);
+		}
+		ui.featureList->clearSelection();
+	}
+
+	// ------------------------------------------------------------------------
+	void FeatureList::SetCursorPos(NQVTK::Vector3 pos)
+	{
+		if (field)
+		{
+			Feature *cursorFeature = field->GetFeature(0);
+			if (cursorFeature)
+			{
+				cursorFeature->examplePos = pos;
+				field->EmitFeatureUpdated(0);
+			}
+		}
+	}
+
+	// ------------------------------------------------------------------------
+	void FeatureList::SetSelectedPos(NQVTK::Vector3 pos)
+	{
+		if (field)
+		{
+			int num = ui.featureList->currentRow();
+			Feature *selectedFeature = field->GetFeature(num);
+			if (selectedFeature)
+			{
+				selectedFeature->examplePos = pos;
+				field->EmitFeatureUpdated(num);
+			}
+		}
+	}
+
+	// ------------------------------------------------------------------------
+	void FeatureList::UpdateFeature(int num)
+	{
+		if (!field) return;
+		Feature *f = field->GetFeature(num);
+		if (f)
+		{
+			if (num > 0)
+			{
+				ui.featureList->item(num)->setText(QString("<%1, %2, %3>")
+					.arg(f->examplePos.x)
+					.arg(f->examplePos.y)
+					.arg(f->examplePos.z));
+			}
+			if (f->enabled)
+			{
+				emit Updated();
+			}
 		}
 	}
 
@@ -47,7 +113,43 @@ namespace VFE
 	{
 		Feature *f = 0;
 		if (field) f = field->GetFeature(row);
-		
+
+		// The cursor feature can never be deleted
+		if (row > 0)
+		{
+			ui.removeFeature->setEnabled(true);
+		}
+		else
+		{
+			ui.removeFeature->setEnabled(false);
+		}
+
 		emit FeatureSelected(f);
+	}
+
+	// ------------------------------------------------------------------------
+	void FeatureList::on_addFeature_clicked()
+	{
+		if (!field) return;
+
+		ui.featureList->addItem("");
+		field->AddFeature();
+		field->EmitFeatureUpdated(field->GetNumberOfFeatures() - 1);
+	}
+
+	// ------------------------------------------------------------------------
+	void FeatureList::on_removeFeature_clicked()
+	{
+		if (!field) return;
+
+		// Remove from the list
+		int num = ui.featureList->currentRow();
+		delete ui.featureList->takeItem(num);
+		// Was the feature enabled?
+		bool enabled = field->GetFeature(num)->enabled;
+		// Remove from the field
+		field->RemoveFeature(num);
+		
+		if (enabled) emit Updated();
 	}
 }

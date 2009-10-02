@@ -22,9 +22,12 @@ namespace VFE
 		rcdialog = new RenderControls(ui.mainViewer, this);
 
 		connect(ui.sliceViewer, SIGNAL(CursorPosChanged(NQVTK::Vector3)), 
-			ui.mainViewer, SLOT(SetCursorPos(NQVTK::Vector3)));
+			ui.featureList, SLOT(SetCursorPos(NQVTK::Vector3)));
 		connect(ui.sliceViewer, SIGNAL(PointSelected(NQVTK::Vector3)), 
-			ui.mainViewer, SLOT(SetSelectedPos(NQVTK::Vector3)));
+			ui.featureList, SLOT(SetSelectedPos(NQVTK::Vector3)));
+
+		connect(ui.featureList, SIGNAL(Updated()), 
+			this, SLOT(RedrawViewers()));
 
 		connect(ui.featureList, SIGNAL(FeatureSelected(Feature*)), 
 			ui.featureEditor, SLOT(SetFeature(Feature*)));
