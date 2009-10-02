@@ -118,7 +118,7 @@ float growth(mat3 j)
 	return g + 0.5;
 }
 
-FeatureVector getFeatureVector(Feature f, vec3 pos)
+FeatureVector getFeatureVector(vec3 pos)
 {
 	FeatureVector result;
 	result.position = pos;
@@ -160,12 +160,18 @@ float distance(FeatureVector a, FeatureVector b,
 	return pow(sum, 1.0/power);
 }
 
-float getValue(Feature f, vec3 pos)
+float getValue(Feature f, FeatureVector fv)
 {
-	// Get FeatureVectors
-	FeatureVector fv = getFeatureVector(f, pos);
 	// Compute distance
 	return distance(fv, f.example, f.mask, 2.0);
+}
+
+float getValue(Feature f, vec3 pos)
+{
+	// Get FeatureVector
+	FeatureVector fv = getFeatureVector(pos);
+	// Compute distance
+	return getValue(f, fv);
 }
 
 // Compute gradient of the volume
@@ -269,8 +275,8 @@ void main()
 		{
 			if (features[f].enabled)
 			{
-				features[f].example = getFeatureVector(
-					features[f], features[f].examplePos);
+				features[f].example = 
+					getFeatureVector(features[f].examplePos);
 			}
 		}
 
@@ -300,13 +306,15 @@ void main()
 		// For each step along the ray...
 		for (int i = 0; i < numSteps + 1 && hitFeature < 0; ++i)
 		{
+			// Get featurevector for the current position
+			FeatureVector fv = getFeatureVector(pos);
 			// Loop over features
 			for (int f = 0; f < VFE_FEATURECOUNT; ++f)
 			{
 				// If the feature is active, test for intersections
 				if (active[f])
 				{
-					float val = getValue(features[f], pos);
+					float val = getValue(features[f], fv);
 					bool insideAtPos = isInside(features[f], val);
 					if (insideAtPos != insideAtStart[f])
 					{
@@ -319,7 +327,6 @@ void main()
 						// Compute gradient
 						// NOTE: we can't optimize this out, as volume[v] is currently 
 						// only possible for deterministic v (constant or for-loop)
-						// TODO: replace with kernel / spline-based method?
 #ifdef NQVTK_RAYCASTER_CENTRALDIFFERENCES
 						gradient[f] = computeGradient(features[f], refined[f], 
 							kernelSize, 0.0);
