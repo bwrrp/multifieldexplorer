@@ -21,7 +21,7 @@ namespace VFE
 	{
 		// TODO: embed shader sources in the app for final version
 		std::string apppath = QApplication::applicationDirPath().toStdString();
-		// Check up to 2 levels up in the directory hierarchy
+		// Check up to 4 levels up in the directory hierarchy
 		std::string searchpath = "/Shaders/" + filename;
 		std::ifstream infile((apppath + searchpath).c_str());
 		for (int i = 0; i < 4 && !infile; ++i)
