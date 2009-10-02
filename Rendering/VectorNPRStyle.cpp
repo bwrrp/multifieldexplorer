@@ -24,15 +24,13 @@ namespace VFE
 		// Check up to 2 levels up in the directory hierarchy
 		std::string searchpath = "/Shaders/" + filename;
 		std::ifstream infile((apppath + searchpath).c_str());
-		for (int i = 0; i < 2 && !infile; ++i)
+		for (int i = 0; i < 4 && !infile; ++i)
 		{
 			searchpath =  "/.." + searchpath;
 			infile.close();
 			infile.clear();
 			infile.open((apppath + searchpath).c_str());
 		}
-		std::cout << "Loading shader '" << apppath + searchpath << 
-			"'..." << std::endl;
 		std::ostringstream contents;
 		if (infile.good())
 		{
