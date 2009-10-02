@@ -23,6 +23,10 @@ namespace VFE
 			ui.enabled->setChecked(feature->enabled);
 			ui.startThreshold->setValue(feature->startThreshold * 100);
 			ui.endThreshold->setValue(feature->endThreshold * 100);
+			ui.examplePosReadout->setText(QString("<%1, %2, %3>")
+				.arg(feature->examplePos.x)
+				.arg(feature->examplePos.y)
+				.arg(feature->examplePos.z));
 			// TODO: update state of property widgets
 			setEnabled(true);
 		}
@@ -47,7 +51,9 @@ namespace VFE
 	{
 		if (feature)
 		{
-			feature->startThreshold = static_cast<float>(value) / 100.0;
+			float v = static_cast<float>(value) / 100.0;
+			feature->startThreshold = v;
+			ui.startThresholdReadout->setText(QString("%1").arg(v));
 			emit Updated();
 		}
 	}
@@ -57,7 +63,9 @@ namespace VFE
 	{
 		if (feature)
 		{
-			feature->endThreshold = static_cast<float>(value) / 100.0;
+			float v = static_cast<float>(value) / 100.0;
+			feature->endThreshold = v;
+			ui.endThresholdReadout->setText(QString("%1").arg(v));
 			emit Updated();
 		}
 	}

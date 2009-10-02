@@ -23,9 +23,9 @@ namespace VFE
 		virtual ~VectorField();
 
 		NQVTK::Scene *GetScene() { return scene; }
-		const NQVTK::Scene *GetScene() const { return scene; }
 
 		int GetNumberOfFeatures() const;
+		Feature *GetFeature(int i);
 		void SetupFeatures(GLProgram *program) const;
 
 		void SetCursorPos(const NQVTK::Vector3 &pos);

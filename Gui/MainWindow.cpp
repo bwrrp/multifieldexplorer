@@ -1,6 +1,7 @@
 #include "MainWindow.h"
 #include "MainWindow.moc"
 
+#include "Data/Feature.h"
 #include "Data/VectorField.h"
 
 #include <NQVTK/Rendering/Renderer.h>
@@ -24,6 +25,11 @@ namespace VFE
 			ui.mainViewer, SLOT(SetCursorPos(NQVTK::Vector3)));
 		connect(ui.sliceViewer, SIGNAL(PointSelected(NQVTK::Vector3)), 
 			ui.mainViewer, SLOT(SetSelectedPos(NQVTK::Vector3)));
+
+		connect(ui.featureList, SIGNAL(FeatureSelected(Feature*)), 
+			ui.featureEditor, SLOT(SetFeature(Feature*)));
+		connect(ui.featureEditor, SIGNAL(Updated()), 
+			this, SLOT(RedrawViewers()));
 	}
 
 	// ------------------------------------------------------------------------
@@ -49,6 +55,7 @@ namespace VFE
 
 			ui.mainViewer->SetField(field);
 			ui.sliceViewer->GetRenderer()->SetScene(field->GetScene());
+			ui.featureList->SetField(field);
 			RedrawViewers();
 		}
 	}

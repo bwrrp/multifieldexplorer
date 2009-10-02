@@ -6,6 +6,7 @@
 
 namespace VFE
 {
+	class Feature;
 	class VectorField;
 
 	class FeatureList : public QWidget
@@ -17,8 +18,14 @@ namespace VFE
 
 		void SetField(VectorField *field);
 
+	signals:
+		void FeatureSelected(Feature *feature);
+
 	protected:
 		Ui::FeatureList ui;
 		VectorField *field;
+
+	private slots:
+		void on_featureList_currentRowChanged(int row);
 	};
 }

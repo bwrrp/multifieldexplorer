@@ -15,6 +15,7 @@ namespace VFE
 	public:
 		FeatureWidget(QWidget *parent = 0);
 
+	public slots:
 		void SetFeature(Feature *feature);
 
 	signals:

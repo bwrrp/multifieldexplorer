@@ -136,6 +136,13 @@ namespace VFE
 	}
 
 	// ------------------------------------------------------------------------
+	Feature *VectorField::GetFeature(int i)
+	{
+		if (i < 0 || i >= GetNumberOfFeatures()) return 0;
+		return &features[i];
+	}
+
+	// ------------------------------------------------------------------------
 	void VectorField::SetupFeatures(GLProgram *program) const
 	{
 		int numFeatures = GetNumberOfFeatures();
