@@ -138,6 +138,7 @@ namespace VFE
 		ui.featureList->addItem("");
 		field->AddFeature();
 		field->EmitFeatureUpdated(field->GetNumberOfFeatures() - 1);
+		ui.featureList->setCurrentRow(field->GetNumberOfFeatures() - 1);
 	}
 
 	// ------------------------------------------------------------------------

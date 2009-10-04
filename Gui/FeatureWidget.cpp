@@ -3,13 +3,18 @@
 
 #include "Data/Feature.h"
 
+#include <QGridLayout>
+#include <QLabel>
+
+#include "PropertySlider.h"
+
 namespace VFE
 {
 	// ------------------------------------------------------------------------
 	FeatureWidget::FeatureWidget(QWidget *parent) : QWidget(parent)
 	{
 		ui.setupUi(this);
-		// TODO: create property widgets
+		CreatePropertyWidgets();
 		SetFeature(0);
 	}
 
@@ -37,13 +42,77 @@ namespace VFE
 					.arg(feature->examplePos.x)
 					.arg(feature->examplePos.y)
 					.arg(feature->examplePos.z));
-				// TODO: update state of property widgets
+				UpdatePropertyWidgets();
 				setEnabled(true);
 			}
 			else
 			{
 				setEnabled(false);
 			}
+		}
+	}
+
+	// ------------------------------------------------------------------------
+	void FeatureWidget::CreatePropertyWidgets()
+	{
+		// Create a dummy feature to get the properties
+		Feature f;
+		// Get layout
+		QGridLayout *layout = dynamic_cast<QGridLayout*>(
+			ui.propertiesGroup->layout());
+		ui.propertyPlaceholder->hide();
+		// Make widgets for the mask
+		FeatureVector &fv = f.mask;
+		int row = 0;
+		int valueIndex = 0;
+		for (std::vector<Property>::const_iterator it = fv.properties.begin();
+			it != fv.properties.end(); ++it)
+		{
+			int size = it->GetSize();
+
+			// Create widgets
+			QString name(it->name.c_str());
+			name[0] = name[0].toTitleCase();
+			QLabel *label = new QLabel(name + ":", ui.propertiesGroup);
+			layout->addWidget(label, row, 0);
+
+			PropertySlider *slider = new PropertySlider(
+				valueIndex, size, this);
+			slider->setRange(0, 100);
+			slider->setValue(0);
+			QSizePolicy pol(QSizePolicy::Expanding, QSizePolicy::Fixed);
+			pol.setHorizontalStretch(1);
+			slider->setSizePolicy(pol);
+			layout->addWidget(slider, row, 1);
+			propertySliders.push_back(slider);
+
+			QLabel *readout = new QLabel("0.00", this);
+			layout->addWidget(readout, row, 2);
+
+			// Connect signals
+			connect(slider, SIGNAL(ValueChanged(float, int)), 
+				this, SLOT(PropertyValueChanged(float, int)));
+			connect(slider, SIGNAL(ValueTextChanged(QString)), 
+				readout, SLOT(setText(QString)));
+
+			valueIndex += size;
+			++row;
+		}
+	}
+
+	// ------------------------------------------------------------------------
+	void FeatureWidget::UpdatePropertyWidgets()
+	{
+		if (!feature) return;
+		FeatureVector &fv = feature->mask;
+
+		int valueIndex = 0;
+		for (unsigned int i = 0; i < propertySliders.size(); ++i)
+		{
+			PropertySlider *slider = propertySliders[i];
+			int size = fv.properties[i].GetSize();
+			slider->setValue(100 * fv.values[valueIndex]);
+			valueIndex += size;
 		}
 	}
 
@@ -64,7 +133,7 @@ namespace VFE
 		{
 			float v = static_cast<float>(value) / 100.0;
 			feature->startThreshold = v;
-			ui.startThresholdReadout->setText(QString("%1").arg(v));
+			ui.startThresholdReadout->setText(QString("%1").arg(v, 0, 'f', 2));
 			emit Updated();
 		}
 	}
@@ -76,7 +145,20 @@ namespace VFE
 		{
 			float v = static_cast<float>(value) / 100.0;
 			feature->endThreshold = v;
-			ui.endThresholdReadout->setText(QString("%1").arg(v));
+			ui.endThresholdReadout->setText(QString("%1").arg(v, 0, 'f', 2));
+			emit Updated();
+		}
+	}
+
+	// ------------------------------------------------------------------------
+	void FeatureWidget::PropertyValueChanged(float value, int index)
+	{
+		if (!feature) return;
+
+		FeatureVector &fv = feature->mask;
+		if (fv.values[index] != value)
+		{
+			fv.values[index] = value;
 			emit Updated();
 		}
 	}

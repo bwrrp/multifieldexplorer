@@ -27,15 +27,14 @@ namespace VFE
 	class FeatureVector
 	{
 	public:
+		// Property descriptions are shared by all FeatureVectors
+		static std::vector<Property> properties;
+		std::vector<float> values;
+
 		FeatureVector();
 
 		void SetupProgram(GLProgram *program, 
 			const std::string &feature) const;
-
-	protected:
-		// Property descriptions are shared by all FeatureVectors
-		static std::vector<Property> properties;
-		std::vector<float> values;
 	};
 
 	class Feature
