@@ -266,15 +266,6 @@ void main()
 				features[f].enabled = false;
 			}
 
-			// TODO: Remove this once we can set masks from the GUI
-			features[f].mask.position = vec3(0.0);
-			features[f].mask.vector = vec3(0.0);
-			features[f].mask.direction = vec3(1.0);
-			features[f].mask.magnitude = 0.0;
-			features[f].mask.growth = 0.0;
-			features[f].mask.divergence = 0.0;
-			features[f].mask.curl = vec3(0.0);
-
 			// Compute examples
 			if (features[f].enabled)
 			{

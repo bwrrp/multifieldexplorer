@@ -90,8 +90,6 @@ namespace VFE
 	{
 		// Create cursor feature
 		features.push_back(Feature());
-		// Create selection feature
-		features.push_back(Feature());
 	}
 
 	// ------------------------------------------------------------------------
