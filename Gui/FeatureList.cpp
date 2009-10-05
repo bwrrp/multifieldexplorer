@@ -27,6 +27,7 @@ namespace VFE
 				this, SLOT(UpdateFeature(int)));
 		}
 		this->field = field;
+		ui.featureList->clear();
 		if (field)
 		{
 			int numFeatures = field->GetNumberOfFeatures();
@@ -51,7 +52,6 @@ namespace VFE
 		}
 		else
 		{
-			ui.featureList->clear();
 			ui.addFeature->setEnabled(false);
 			ui.removeFeature->setEnabled(false);
 		}

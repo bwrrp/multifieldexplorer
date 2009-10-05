@@ -36,8 +36,10 @@ namespace VFE
 			{
 				// Update widgets
 				ui.enabled->setChecked(feature->enabled);
-				ui.startThreshold->setValue(feature->startThreshold * 100);
-				ui.endThreshold->setValue(feature->endThreshold * 100);
+				ui.startThreshold->setValue(
+					0.5 + 100.0 * feature->startThreshold);
+				ui.endThreshold->setValue(
+					0.5 + 100.0 * feature->endThreshold);
 				ui.examplePosReadout->setText(QString("<%1, %2, %3>")
 					.arg(feature->examplePos.x)
 					.arg(feature->examplePos.y)
@@ -111,7 +113,7 @@ namespace VFE
 		{
 			PropertySlider *slider = propertySliders[i];
 			int size = fv.properties[i].GetSize();
-			slider->setValue(100 * fv.values[valueIndex]);
+			slider->setValue(0.5 + 100.0 * fv.values[valueIndex]);
 			valueIndex += size;
 		}
 	}

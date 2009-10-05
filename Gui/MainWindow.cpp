@@ -49,19 +49,15 @@ namespace VFE
 		VectorField *newField = VectorField::Load(filename);
 		if (newField)
 		{
-			if (field)
-			{
-				ui.mainViewer->GetRenderer()->SetScene(0);
-				ui.sliceViewer->GetRenderer()->SetScene(0);
-				delete field;
-				field = 0;
-			}
+			VectorField *oldField = field;
 			field = newField;
 
 			ui.mainViewer->SetField(field);
 			ui.sliceViewer->GetRenderer()->SetScene(field->GetScene());
 			ui.featureList->SetField(field);
 			RedrawViewers();
+
+			delete oldField;
 		}
 	}
 

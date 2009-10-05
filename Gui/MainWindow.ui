@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>761</width>
-    <height>611</height>
+    <width>790</width>
+    <height>730</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>VFE test app</string>
+   <string>Vector Field Explorer</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -100,7 +100,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>761</width>
+     <width>790</width>
      <height>19</height>
     </rect>
    </property>

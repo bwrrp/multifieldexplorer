@@ -43,7 +43,7 @@ namespace VFE
 	{
 		VectorNPRStyle *style = mainViewer->GetStyle();
 		float v = static_cast<float>(value) / 100.0;
-		ui.stepSizeReadout->setText(QString("%1").arg(v, 0, 'f', 3));
+		ui.stepSizeReadout->setText(QString("%1").arg(v, 0, 'f', 2));
 		style->stepSize = v;
 		mainViewer->updateGL();
 	}
@@ -53,7 +53,7 @@ namespace VFE
 	{
 		VectorNPRStyle *style = mainViewer->GetStyle();
 		float v = static_cast<float>(value) / 100.0;
-		ui.kernelSizeReadout->setText(QString("%1").arg(v, 0, 'f', 3));
+		ui.kernelSizeReadout->setText(QString("%1").arg(v, 0, 'f', 2));
 		style->kernelSize = v;
 		mainViewer->updateGL();
 	}
