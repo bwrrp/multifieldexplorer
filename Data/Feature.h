@@ -45,6 +45,7 @@ namespace VFE
 		FeatureVector mask;
 		float startThreshold;
 		float endThreshold;
+		float power;
 		// TODO: add visualization style parameters
 
 		Feature();

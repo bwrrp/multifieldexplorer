@@ -83,6 +83,7 @@ namespace VFE
 		enabled = true;
 		startThreshold = 0.0;
 		endThreshold = 0.5;
+		power = 2.0;
 	}
 
 	// ------------------------------------------------------------------------
@@ -100,5 +101,6 @@ namespace VFE
 		program->SetUniform1f(feature.str() + "startThreshold", 
 			startThreshold);
 		program->SetUniform1f(feature.str() + "endThreshold", endThreshold);
+		program->SetUniform1f(feature.str() + "power", power);
 	}
 }

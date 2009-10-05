@@ -37,6 +37,7 @@ namespace VFE
 		void on_enabled_toggled(bool checked);
 		void on_startThreshold_valueChanged(int value);
 		void on_endThreshold_valueChanged(int value);
+		void on_power_valueChanged(int value);
 		void PropertyValueChanged(float value, int index);
 	};
 }

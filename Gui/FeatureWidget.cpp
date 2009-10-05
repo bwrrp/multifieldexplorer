@@ -136,7 +136,7 @@ namespace VFE
 			float v = static_cast<float>(value) / 100.0;
 			feature->startThreshold = v;
 			ui.startThresholdReadout->setText(QString("%1").arg(v, 0, 'f', 2));
-			emit Updated();
+			if (feature->enabled) emit Updated();
 		}
 	}
 
@@ -148,7 +148,19 @@ namespace VFE
 			float v = static_cast<float>(value) / 100.0;
 			feature->endThreshold = v;
 			ui.endThresholdReadout->setText(QString("%1").arg(v, 0, 'f', 2));
-			emit Updated();
+			if (feature->enabled) emit Updated();
+		}
+	}
+
+	// ------------------------------------------------------------------------
+	void FeatureWidget::on_power_valueChanged(int value)
+	{
+		if (feature)
+		{
+			float v = static_cast<float>(value) / 100.0;
+			feature->power = v;
+			ui.powerReadout->setText(QString("%1").arg(v, 0, 'f', 2));
+			if (feature->enabled) emit Updated();
 		}
 	}
 
@@ -161,7 +173,7 @@ namespace VFE
 		if (fv.values[index] != value)
 		{
 			fv.values[index] = value;
-			emit Updated();
+			if (feature->enabled) emit Updated();
 		}
 	}
 }

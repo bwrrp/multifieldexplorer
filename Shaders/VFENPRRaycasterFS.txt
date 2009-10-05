@@ -43,7 +43,7 @@ struct Feature
 	FeatureVector mask;
 	float startThreshold;
 	float endThreshold;
-
+	float power;
 };
 
 uniform Feature userFeatures[VFE_FEATURECOUNT];
@@ -141,22 +141,22 @@ float distance(FeatureVector a, FeatureVector b,
 	float sum = 0.0;
 	vec3 v;
 	// pos
-	v = mask.position * pow(a.position - b.position, vec3(power));
+	v = mask.position * pow(abs(a.position - b.position), vec3(power));
 	sum += v.x + v.y + v.z;
 	// vector
-	v = mask.vector * pow(a.vector - b.vector, vec3(power));
+	v = mask.vector * pow(abs(a.vector - b.vector), vec3(power));
 	sum += v.x + v.y + v.z;
 	// dir
-	v = mask.direction * pow(a.direction - b.direction, vec3(power));
+	v = mask.direction * pow(abs(a.direction - b.direction), vec3(power));
 	sum += v.x + v.y + v.z;
 	// magnitude
-	sum += mask.magnitude * pow(a.magnitude - b.magnitude, power);
+	sum += mask.magnitude * pow(abs(a.magnitude - b.magnitude), power);
 	// growth
-	sum += mask.growth * pow(a.growth - b.growth, power);
+	sum += mask.growth * pow(abs(a.growth - b.growth), power);
 	// divergence
-	sum += mask.divergence * pow(a.divergence - b.divergence, power);
+	sum += mask.divergence * pow(abs(a.divergence - b.divergence), power);
 	// curl
-	v = mask.curl * pow(a.curl - b.curl, vec3(power));
+	v = mask.curl * pow(abs(a.curl - b.curl), vec3(power));
 	sum += v.x + v.y + v.z;
 	return pow(sum, 1.0/power);
 }
@@ -164,7 +164,7 @@ float distance(FeatureVector a, FeatureVector b,
 float getValue(Feature f, FeatureVector fv)
 {
 	// Compute distance
-	return distance(fv, f.example, f.mask, 2.0);
+	return distance(fv, f.example, f.mask, f.power);
 }
 
 float getValue(Feature f, vec3 pos)
