@@ -17,7 +17,7 @@ namespace VFE
 {
 	// ------------------------------------------------------------------------
 	// Helper function
-	std::string LoadShader(const std::string &filename)
+	static std::string LoadShader(const std::string &filename)
 	{
 		// TODO: embed shader sources in the app for final version
 		std::string apppath = QApplication::applicationDirPath().toStdString();
