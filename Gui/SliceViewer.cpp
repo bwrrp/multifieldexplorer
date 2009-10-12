@@ -2,6 +2,7 @@
 #include "SliceViewer.h"
 #include "SliceViewer.moc"
 
+#include "Data/VectorField.h"
 #include "SelectionSliceViewInteractor.h"
 #include "Rendering/SliceRenderer.h"
 
@@ -41,5 +42,13 @@ namespace VFE
 	// ------------------------------------------------------------------------
 	SliceViewer::~SliceViewer()
 	{
+	}
+
+	// ------------------------------------------------------------------------
+	void SliceViewer::SetField(VectorField *field)
+	{
+		GetRenderer()->SetScene(field->GetScene());
+		SliceRenderer *sr = dynamic_cast<SliceRenderer*>(GetRenderer());
+		if (sr) sr->SetField(field);
 	}
 }

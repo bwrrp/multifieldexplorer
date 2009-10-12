@@ -134,8 +134,6 @@ vec4 shadeFragment(sample fragment)
 	// Some extra coloring effects for volume features
 	if (length(fragment.pos) > 0.0)
 	{
-		if (fragment.id == fidbase) color.rgb = vec3(1.0, 0.5, 0.0);
-		if (fragment.id == fidbase + 1) color.rgb = vec3(0.0, 0.5, 1.0);
 		if ((getBit(fragment.inOutPrevious, fidbase) && 
 			getBit(fragment.inOutPrevious, fidbase + 1)) != 
 			(getBit(fragment.inOut, fidbase) && 

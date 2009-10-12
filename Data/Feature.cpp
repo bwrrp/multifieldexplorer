@@ -84,6 +84,9 @@ namespace VFE
 		startThreshold = 0.0;
 		endThreshold = 0.5;
 		power = 2.0;
+
+		// Default color is white
+		color = NQVTK::Vector3(1.0);
 	}
 
 	// ------------------------------------------------------------------------
@@ -102,5 +105,10 @@ namespace VFE
 			startThreshold);
 		program->SetUniform1f(feature.str() + "endThreshold", endThreshold);
 		program->SetUniform1f(feature.str() + "power", power);
+
+		program->SetUniform3f(feature.str() + "color", 
+			static_cast<float>(color.x), 
+			static_cast<float>(color.y), 
+			static_cast<float>(color.z));
 	}
 }

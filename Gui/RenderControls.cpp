@@ -3,15 +3,18 @@
 
 #include <NQVTK/Rendering/LayeredRaycastingRenderer.h>
 
+#include "Rendering/SliceRenderer.h"
 #include "Rendering/VectorNPRStyle.h"
 
-#include "mainViewer.h"
+#include "MainViewer.h"
+#include "SliceViewer.h"
 
 namespace VFE
 {
 	// ------------------------------------------------------------------------
-	RenderControls::RenderControls(MainViewer *mainViewer, QWidget *parent) 
-		: QWidget(parent, Qt::Tool), mainViewer(mainViewer)
+	RenderControls::RenderControls(MainViewer *mainViewer, 
+		SliceViewer *sliceViewer, QWidget *parent) : QWidget(parent, Qt::Tool), 
+		mainViewer(mainViewer), sliceViewer(sliceViewer)
 	{
 		ui.setupUi(this);
 	}
@@ -54,7 +57,14 @@ namespace VFE
 		VectorNPRStyle *style = mainViewer->GetStyle();
 		float v = static_cast<float>(value) / 100.0;
 		ui.kernelSizeReadout->setText(QString("%1").arg(v, 0, 'f', 2));
-		style->kernelSize = v;
+		style->kernelSize = v;		
 		mainViewer->updateGL();
+		SliceRenderer *renderer = dynamic_cast<SliceRenderer*>(
+			sliceViewer->GetRenderer());
+		if (renderer)
+		{
+			renderer->kernelSize = v;
+			sliceViewer->updateGL();
+		}
 	}
 }

@@ -46,7 +46,9 @@ namespace VFE
 		float startThreshold;
 		float endThreshold;
 		float power;
-		// TODO: add visualization style parameters
+
+		// TODO: add more visualization style parameters
+		NQVTK::Vector3 color;
 
 		Feature();
 

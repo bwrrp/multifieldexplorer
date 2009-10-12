@@ -1,9 +1,17 @@
 #include "SliceRenderer.h"
 
+#include "Data/VectorField.h"
+
 #include <GLBlaat/GLProgram.h>
+
+#include <NQVTK/ParamSets/VolumeParamSet.h>
+#include <NQVTK/Renderables/Renderable.h>
+#include <NQVTK/Rendering/View.h>
+#include <NQVTK/Rendering/Volume.h>
 
 #include <QApplication>
 
+#include <cassert>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -60,8 +68,75 @@ namespace VFE
 	}
 
 	// ------------------------------------------------------------------------
-	SliceRenderer::SliceRenderer()
+	SliceRenderer::SliceRenderer() : field(0)
 	{
+		unitSize = 1.0;
+		kernelSize = 1.0;
+	}
+
+	// ------------------------------------------------------------------------
+	void SliceRenderer::Draw()
+	{
+		// Prepare the shader uniforms
+		// TODO: extend the RenderStyle mechanism to include normal Renderers
+		shader->Start();
+		if (field) field->SetupFeatures(shader);
+		shader->SetUniform1f("kernelSize", kernelSize * unitSize);
+		shader->Stop();
+
+		Superclass::Draw();
+	}
+
+	// ------------------------------------------------------------------------
+	void SliceRenderer::SceneChanged()
+	{
+		// Compute unitSize
+		unitSize = 1000000.0;
+		for (unsigned int i = 0; i < view->GetNumberOfRenderables(); ++i)
+		{
+			NQVTK::Renderable *renderable = view->GetRenderable(i);
+			if (renderable)
+			{
+				NQVTK::VolumeParamSet *vps = 
+					dynamic_cast<NQVTK::VolumeParamSet*>(
+						renderable->GetParamSet("volume"));
+				if (vps)
+				{
+					NQVTK::Volume *volume = vps->GetVolume();
+					if (volume)
+					{
+						// Compute spacings
+						NQVTK::Vector3 size = 
+							volume->GetOriginalSize();
+						double spX = size.x / static_cast<double>(
+							volume->GetWidth() - 1);
+						double spY = size.y / static_cast<double>(
+							volume->GetHeight() - 1);
+						double spZ = size.z / static_cast<double>(
+							volume->GetDepth() - 1);
+						// Update unitSize if any are smaller
+						if (spX < unitSize) unitSize = spX;
+						if (spY < unitSize) unitSize = spY;
+						if (spZ < unitSize) unitSize = spZ;
+					}
+				}
+				else
+				{
+					// Add an empty volume ParamSet
+					renderable->SetParamSet("volume", 
+						new NQVTK::VolumeParamSet(0));
+				}
+			}
+		}
+		assert(unitSize > 0.0);
+
+		Superclass::SceneChanged();
+	}
+
+	// ------------------------------------------------------------------------
+	void SliceRenderer::SetField(VectorField *field)
+	{
+		this->field = field;
 	}
 
 	// ------------------------------------------------------------------------

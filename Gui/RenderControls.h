@@ -7,18 +7,21 @@
 namespace VFE
 {
 	class MainViewer;
+	class SliceViewer;
 
 	class RenderControls : public QWidget
 	{
 		Q_OBJECT;
 
 	public:
-		RenderControls(MainViewer *mainViewer, QWidget *parent = 0);
+		RenderControls(MainViewer *mainViewer, SliceViewer *sliceViewer, 
+			QWidget *parent = 0);
 
 	protected:
 		Ui::RenderControls ui;
 
 		MainViewer *mainViewer;
+		SliceViewer *sliceViewer;
 
 	private slots:
 		void on_maxLayers_valueChanged(int value);

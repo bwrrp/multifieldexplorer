@@ -47,7 +47,7 @@ namespace VFE
 	VectorNPRStyle::VectorNPRStyle() : field(0)
 	{
 		// TODO: adjust this based on the current number of features
-		SetOption("VFE_FEATURECOUNT", 4);
+		SetOption("VFE_FEATURECOUNT", 16);
 		SetOption("NQVTK_BITMASK_BITS", 8);
 	}
 

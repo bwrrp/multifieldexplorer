@@ -19,7 +19,7 @@ namespace VFE
 	{
 		ui.setupUi(this);
 
-		rcdialog = new RenderControls(ui.mainViewer, this);
+		rcdialog = new RenderControls(ui.mainViewer, ui.sliceViewer, this);
 
 		connect(ui.sliceViewer, SIGNAL(CursorPosChanged(NQVTK::Vector3)), 
 			ui.featureList, SLOT(SetCursorPos(NQVTK::Vector3)));
@@ -53,7 +53,7 @@ namespace VFE
 			field = newField;
 
 			ui.mainViewer->SetField(field);
-			ui.sliceViewer->GetRenderer()->SetScene(field->GetScene());
+			ui.sliceViewer->SetField(field);
 			ui.featureList->SetField(field);
 			RedrawViewers();
 

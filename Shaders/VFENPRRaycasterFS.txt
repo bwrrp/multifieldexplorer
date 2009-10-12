@@ -44,6 +44,7 @@ struct Feature
 	float startThreshold;
 	float endThreshold;
 	float power;
+	vec3 color;
 };
 
 uniform Feature userFeatures[VFE_FEATURECOUNT];
@@ -365,7 +366,7 @@ void main()
 			id = nearestF + fidbase;
 			info = vec4(refined[nearestF] + normalStep, 
 				setBit(infoBefore.a, id, !insideAtStart[nearestF]));
-			color = vec4(vec3(1.0), 0.7);
+			color = vec4(features[nearestF].color, 0.7);
 			normal = gradient[nearestF];
 			if (dot(normal, step) > 0.0) normal = -normal;
 			normal = gl_NormalMatrix * normal;

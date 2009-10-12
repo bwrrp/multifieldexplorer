@@ -4,6 +4,8 @@
 
 namespace VFE
 {
+	class VectorField;
+
 	class SliceRenderer : public NQVTK::SliceRenderer
 	{
 	public:
@@ -11,7 +13,19 @@ namespace VFE
 
 		SliceRenderer();
 
+		void Draw();
+
+		void SceneChanged();
+
+		void SetField(VectorField *field);
+
+		float kernelSize;
+
 	protected:
+		VectorField *field;
+
+		float unitSize;
+
 		virtual bool Initialize();
 	};
 }

@@ -6,6 +6,9 @@
 
 namespace VFE
 {
+	class VectorField;
+	class SliceRenderer;
+
 	class SliceViewer : public NQVTKWidget
 	{
 		Q_OBJECT;
@@ -15,6 +18,8 @@ namespace VFE
 
 		SliceViewer(QWidget *parent = 0);
 		virtual ~SliceViewer();
+
+		void SetField(VectorField *field);
 
 	signals:
 		void CursorPosChanged(NQVTK::Vector3 pos);
