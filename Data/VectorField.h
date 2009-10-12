@@ -45,5 +45,6 @@ namespace VFE
 
 		NQVTK::Scene *scene;
 		std::vector<Feature> features;
+		std::vector<NQVTK::Vector3> featureColors;
 	};
 }

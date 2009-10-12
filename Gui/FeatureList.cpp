@@ -139,6 +139,8 @@ namespace VFE
 		field->AddFeature();
 		field->EmitFeatureUpdated(field->GetNumberOfFeatures() - 1);
 		ui.featureList->setCurrentRow(field->GetNumberOfFeatures() - 1);
+		// TODO: max number of features should be variable
+		ui.addFeature->setEnabled(field->GetNumberOfFeatures() < 6);
 	}
 
 	// ------------------------------------------------------------------------
@@ -153,7 +155,10 @@ namespace VFE
 		bool enabled = field->GetFeature(num)->enabled;
 		// Remove from the field
 		field->RemoveFeature(num);
-		
+
+		// TODO: max number of features should be variable
+		ui.addFeature->setEnabled(field->GetNumberOfFeatures() < 6);
+
 		if (enabled) emit Updated();
 	}
 }

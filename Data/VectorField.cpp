@@ -20,6 +20,8 @@
 
 #include <QFileInfo>
 
+#include <cmath>
+
 namespace VFE
 {
 	// ------------------------------------------------------------------------
@@ -88,8 +90,19 @@ namespace VFE
 	// ------------------------------------------------------------------------
 	VectorField::VectorField(NQVTK::Scene *scene) : scene(scene)
 	{
-		// Create cursor feature
-		features.push_back(Feature());
+		// Create a set of feature colors
+		// TODO: integrate this into the GUI at some point
+		featureColors.push_back(NQVTK::Vector3(1.0, 1.0, 1.0));
+		featureColors.push_back(NQVTK::Vector3(1.0, 0.5, 0.0));
+		featureColors.push_back(NQVTK::Vector3(0.0, 0.5, 1.0));
+		featureColors.push_back(NQVTK::Vector3(1.0, 0.0, 0.5));
+		featureColors.push_back(NQVTK::Vector3(0.0, 1.0, 0.5));
+		featureColors.push_back(NQVTK::Vector3(0.5, 1.0, 0.0));
+		featureColors.push_back(NQVTK::Vector3(0.5, 0.0, 1.0));
+		featureColors.push_back(NQVTK::Vector3(1.0, 1.0, 1.0));
+
+		// Add Cursor feature
+		AddFeature();
 	}
 
 	// ------------------------------------------------------------------------
@@ -147,6 +160,10 @@ namespace VFE
 	void VectorField::AddFeature()
 	{
 		features.push_back(Feature());
+		// Assign a color from the palette
+		unsigned int i = features.size() - 1;
+		features[i].color = 
+			featureColors[std::min(i, featureColors.size() - 1)];
 	}
 
 	// ------------------------------------------------------------------------
