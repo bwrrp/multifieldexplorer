@@ -37,5 +37,7 @@ namespace VFE
 		void on_actionRenderingOptions_triggered();
 		// TODO: remove this and turn shaders into resource
 		void on_actionReloadShaders_triggered();
+		void on_actionStartBenchmark_triggered();
+		void on_mainViewer_fpsChanged(int fps);
 	};
 }

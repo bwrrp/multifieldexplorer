@@ -103,4 +103,16 @@ namespace VFE
 		ui.sliceViewer->Initialize();
 		RedrawViewers();
 	}
+
+	// ------------------------------------------------------------------------
+	void MainWindow::on_actionStartBenchmark_triggered()
+	{
+		ui.mainViewer->StartContinuousUpdate();
+	}
+
+	// ------------------------------------------------------------------------
+	void MainWindow::on_mainViewer_fpsChanged(int fps)
+	{
+		setWindowTitle(QString("Vector Field Explorer - %1 fps").arg(fps));
+	}
 }

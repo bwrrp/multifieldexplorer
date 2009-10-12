@@ -119,6 +119,7 @@
     <addaction name="actionRenderingOptions"/>
     <addaction name="separator"/>
     <addaction name="actionReloadShaders"/>
+    <addaction name="actionStartBenchmark"/>
    </widget>
    <addaction name="menuApp"/>
    <addaction name="menuOptions"/>
@@ -156,6 +157,11 @@
   <action name="actionRenderingOptions">
    <property name="text">
     <string>&amp;Rendering options...</string>
+   </property>
+  </action>
+  <action name="actionStartBenchmark">
+   <property name="text">
+    <string>Start &amp;benchmark</string>
    </property>
   </action>
  </widget>
