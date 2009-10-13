@@ -10,7 +10,9 @@
 #include <NQVTK/Renderables/Renderable.h>
 
 #include <QApplication>
+#include <QDateTime>
 #include <QFileDialog>
+#include <QImage>
 
 namespace VFE
 {
@@ -108,6 +110,19 @@ namespace VFE
 	void MainWindow::on_actionStartBenchmark_triggered()
 	{
 		ui.mainViewer->StartContinuousUpdate();
+	}
+
+	// ------------------------------------------------------------------------
+	void MainWindow::on_actionScreenshot_triggered()
+	{
+		QDateTime now = QDateTime::currentDateTime();
+		QImage screenshot = ui.mainViewer->grabFrameBuffer(true);
+		// Fix alpha values
+		screenshot.invertPixels(QImage::InvertRgba);
+		screenshot.invertPixels(QImage::InvertRgb);
+		// Save it
+		screenshot.save(QString("VFE-%1.png").arg(
+			now.toString("yyMMdd-hhmmss")), "PNG");
 	}
 
 	// ------------------------------------------------------------------------

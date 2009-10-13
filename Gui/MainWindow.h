@@ -38,6 +38,7 @@ namespace VFE
 		// TODO: remove this and turn shaders into resource
 		void on_actionReloadShaders_triggered();
 		void on_actionStartBenchmark_triggered();
+		void on_actionScreenshot_triggered();
 		void on_mainViewer_fpsChanged(int fps);
 	};
 }
