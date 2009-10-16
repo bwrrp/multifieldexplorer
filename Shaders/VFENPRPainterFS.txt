@@ -45,6 +45,12 @@ float plusTexture(vec2 c)
 		(1.0 - stripes(c.x + 8.0, 20, 4) * stripes(c.y + 8.0, 20, 4));
 }
 
+float minusTexture(vec2 c)
+{
+	return 1.0 - stripes(c.x, 20, 8) * 
+		(1.0 - stripes(c.y + 8.0, 20, 4));
+}
+
 float stripeTexture(vec2 c)
 {
 	return stripes(abs(c.x + c.y), 20, 8);
@@ -204,29 +210,41 @@ vec4 shadeFragment(sample fragment)
 		color.rgb *= (0.5 + 0.5 * stripeTexture(fragment.coord));
 	} else if (fragment.id == fidbase + 1) {
 		color.rgb *= (0.5 + 0.5 * plusTexture(fragment.coord));
+	} else if (fragment.id == fidbase + 2) {
+		color.rgb *= (0.5 + 0.5 * minusTexture(fragment.coord));
 	}
 	//*/
+	if (fragment.id > fidbase) color.a = 1.0;
+	//if (fragment.id == fidbase + 3) color.a = 0.2;
 
 	//* Test: vector direction visualization
-	if (fragment.id >= fidbase)
+	if (fragment.id == fidbase + 3 || fragment.id == fidbase + 5)
 	{
 		vec4 tpos = gl_TextureMatrixInverse[0] * vec4(fragment.pos, 1.0);
 		vec3 p = ((tpos.xyz / tpos.w) - volumeOrigin[0]) / volumeSize[0];
 		vec3 dir = vec3(volumeDataShift[0]) + volumeDataScale[0] * texture3D(volume[0], p).xyz;
 		dir = gl_NormalMatrix * normalize(dir);
 		vec2 d = dir.xy; 
-		//vec2 d = (dir - dot(dir, normal) * normal).xy;
+		if (fragment.id == fidbase + 3) 
+			d = (dir - dot(dir, fragment.normal) * fragment.normal).xy;
 		//* Smearing
 		int n = 0;
 		float f = 0.0;
-		for (int i = 0; i < int(100.0 * testParam); ++i)
+		float wtot = 0.0;
+		int imax = 50;
+		for (int i = 0; i < imax; ++i)
 		{
-			vec2 tc = fragment.coord + float(i - 25) * d;
-			f += dotTexture(tc);
+			vec2 tc = fragment.coord + float(i - imax) * d;
+			float w = pow(float(i) / float(imax), 2.0);
+			if (i == imax - 1) f += dotTexture(tc) * 3.0;
+			f += dotTexture(tc) * w;
+			wtot += w;
 			++n;
 		}
-		f /= float(n);
+		f /= wtot;
+		//if (f < 0.8) f = 0.0;
 		color.rgb *= f;
+		//color.a = 0.1 + 0.4 * f;
 	}
 	//*/
 
