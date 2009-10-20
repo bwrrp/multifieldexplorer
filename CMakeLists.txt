@@ -97,6 +97,14 @@ SET( ${ProjectName}_ExtraSource
 	main.cpp
 )
 
+# Application icon on Windows builds
+IF( WIN32 )
+	SET( ${ProjectName}_ExtraSource
+		${${ProjectName}_ExtraSource}
+		vfe.rc
+	)
+ENDIF( WIN32 )
+
 # ==================================================
 # YOU DO NOT NEED TO MODIFY ANYTHING BELOW THIS LINE
 # ==================================================
