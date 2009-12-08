@@ -16,6 +16,8 @@ namespace PropertySpace
 
 		void DoPCA();
 
+		void Transform();
+
 	protected:
 		int width, height, depth;
 		itpp::mat data;
@@ -24,5 +26,7 @@ namespace PropertySpace
 		itpp::mat eigVecs;
 
 		Field(vtkImageData *volume);
+
+		void BuildPropertyMatrix(vtkImageData *volume);
 	};
 }

@@ -78,6 +78,7 @@ SET( ${ProjectName}_ModuleNames
 
 SET( ${ProjectName}_Data_Classes
 	Field
+	Vector3
 )
 
 # --------------------------------------------------

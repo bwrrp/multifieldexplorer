@@ -8,6 +8,8 @@
 #include <itpp/itsignal.h>
 #include <itpp/itstat.h>
 
+#include "Vector3.h"
+
 #include <cassert>
 #include <iostream>
 
@@ -25,27 +27,12 @@ namespace PropertySpace
 		height = dims[1];
 		depth = dims[2];
 
+		// We assume the volume is a vector volume
 		int numComps = volume->GetNumberOfScalarComponents();
+		assert(numComps == 3);
 
 		// Build data matrix
-		std::cout << "Building matrix..." << std::endl;
-		data.set_size(width * height * depth, numComps);
-		int row = 0;
-		for (int z = 0; z < depth; ++z)
-		{
-			for (int y = 0; y < height; ++y)
-			{
-				for (int x = 0; x < width; ++x)
-				{
-					for (int comp = 0; comp < numComps; ++comp)
-					{
-						data(row, comp) = 
-							volume->GetScalarComponentAsDouble(x, y, z, comp);
-					}
-					++row;
-				}
-			}
-		}
+		BuildPropertyMatrix(volume);
 	}
 
 	// ------------------------------------------------------------------------
@@ -144,6 +131,64 @@ namespace PropertySpace
 		{
 			std::cout << i + 1 << ": " << eigVecs.get_col(i) << 
 				" (eval " << eigVals(i) << ")" << std::endl;
+		}
+	}
+
+	// ------------------------------------------------------------------------
+	void Field::Transform()
+	{
+		// The transformation matrix is based on scaled eigenvectors
+		std::cout << "Buiding transformation..." << std::endl;
+		itpp::mat basis = eigVecs;
+		for (int i = 0; i < basis.cols(); ++i)
+		{
+			itpp::vec v = basis.get_col(i);
+			v *= 1.0 / sqrt(eigVals(i));
+			basis.set_col(i, v);
+		}
+
+		std::cout << "Transforming data..." << std::endl;
+		data = data * basis;
+	}
+
+	// ------------------------------------------------------------------------
+	void Field::BuildPropertyMatrix(vtkImageData *volume)
+	{
+		// vector, direction and magnitude
+		// TODO: implement Gaussian convolution for derivatives
+		const int numComps = 3 + 3 + 1;
+
+		std::cout << "Building matrix..." << std::endl;
+		data.set_size(width * height * depth, numComps);
+		int row = 0;
+		for (int z = 0; z < depth; ++z)
+		{
+			for (int y = 0; y < height; ++y)
+			{
+				for (int x = 0; x < width; ++x)
+				{
+					NQVTK::Vector3 v(
+						volume->GetScalarComponentAsDouble(x, y, z, 0), 
+						volume->GetScalarComponentAsDouble(x, y, z, 1), 
+						volume->GetScalarComponentAsDouble(x, y, z, 2));
+
+					// Vector
+					data(row, 0) = v.x;
+					data(row, 1) = v.y;
+					data(row, 2) = v.z;
+
+					// Direction
+					NQVTK::Vector3 d = v.normalized();
+					data(row, 3) = d.x;
+					data(row, 4) = d.y;
+					data(row, 5) = d.z;
+
+					// Magnitude
+					data(row, 6) = v.length();
+
+					++row;
+				}
+			}
 		}
 	}
 }

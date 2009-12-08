@@ -21,12 +21,15 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
-	// TODO: extend field with derived properties
-
 	// Do PCA
 	field->DoPCA();
 
+	// Transform extended field to normalized PCA basis
+	field->Transform();
+
 	// TODO: save transformed field as volumes
+
+	// TODO: save data transformation matrix
 
 	// Clean up
 	delete field;
