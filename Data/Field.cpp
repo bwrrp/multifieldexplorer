@@ -190,5 +190,17 @@ namespace PropertySpace
 				}
 			}
 		}
+
+		// Compute mean
+		mean.set_size(data.cols());
+		for (int i = 0; i < data.cols(); ++i)
+		{
+			mean(i) = itpp::mean(data.get_col(i));
+		}
+		// Center data
+		for (int i = 0; i < data.rows(); ++i)
+		{
+			data.set_row(i, data.get_row(i) - mean);
+		}
 	}
 }

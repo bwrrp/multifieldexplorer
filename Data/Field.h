@@ -21,6 +21,7 @@ namespace PropertySpace
 	protected:
 		int width, height, depth;
 		itpp::mat data;
+		itpp::vec mean;
 
 		itpp::vec eigVals;
 		itpp::mat eigVecs;
