@@ -28,9 +28,7 @@ int main(int argc, char** argv)
 	field->Transform();
 
 	// Save transformed field as volumes
-	field->Save("D:\\Temp\\TestField", 5);
-
-	// TODO: save data transformation matrix
+	field->Save("D:\\Temp\\TestField", 6);
 
 	// Clean up
 	delete field;

@@ -30,9 +30,12 @@ namespace PropertySpace
 
 		itpp::vec eigVals;
 		itpp::mat eigVecs;
+		itpp::mat basis;
 
 		Field(vtkImageData *volume);
 
 		void BuildPropertyMatrix(vtkImageData *volume);
+
+		void SaveDataTransform(const std::string &filename, int comps);
 	};
 }

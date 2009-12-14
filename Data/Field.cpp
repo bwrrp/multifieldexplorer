@@ -148,7 +148,7 @@ namespace PropertySpace
 	{
 		// The transformation matrix is based on scaled eigenvectors
 		std::cout << "Buiding transformation..." << std::endl;
-		itpp::mat basis = eigVecs;
+		basis = eigVecs;
 		for (int i = 0; i < basis.cols(); ++i)
 		{
 			itpp::vec v = basis.get_col(i);
@@ -163,11 +163,14 @@ namespace PropertySpace
 	// ------------------------------------------------------------------------
 	void Field::Save(const std::string &filename, int comps)
 	{
-		std::cout << "Preparing to save..." << std::endl;
 		if (comps <= 0) comps = data.cols();
 		assert(comps <= data.cols());
 
+		// Save transform
+		SaveDataTransform(filename, comps);
+
 		// Prepare volume
+		std::cout << "Preparing to save fields..." << std::endl;
 		vtkSmartPointer<vtkImageData> volume = 
 			vtkSmartPointer<vtkImageData>::New();
 		volume->SetScalarTypeToFloat();
@@ -325,5 +328,18 @@ namespace PropertySpace
 		{
 			data.set_row(i, data.get_row(i) - mean);
 		}
+	}
+
+	// ------------------------------------------------------------------------
+	void Field::SaveDataTransform(const std::string &filename, int comps)
+	{
+		// Save transformation matrix
+		itpp::mat transform = basis.get(0, basis.rows() - 1, 0, comps - 1);
+
+		std::ostringstream file;
+		file << filename << "_transform.itpp";
+
+		itpp::it_file transformFile(file.str(), true);
+		transformFile << itpp::Name("transform") << transform;
 	}
 }
