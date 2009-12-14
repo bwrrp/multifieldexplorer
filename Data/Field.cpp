@@ -4,6 +4,7 @@
 #include <vtkImageExtractComponents.h>
 #include <vtkImageGradient.h>
 #include <vtkMetaImageReader.h>
+#include <vtkMetaImageWriter.h>
 #include <vtkSmartPointer.h>
 #include <vtkXMLImageDataReader.h>
 
@@ -15,6 +16,7 @@
 
 #include <cassert>
 #include <iostream>
+#include <sstream>
 
 namespace PropertySpace
 {
@@ -33,6 +35,10 @@ namespace PropertySpace
 		// We assume the volume is a vector volume
 		int numComps = volume->GetNumberOfScalarComponents();
 		assert(numComps == 3);
+
+		// Get spacing and origin
+		volume->GetSpacing(spacing);
+		volume->GetOrigin(origin);
 
 		// Build data matrix
 		BuildPropertyMatrix(volume);
@@ -152,6 +158,62 @@ namespace PropertySpace
 
 		std::cout << "Transforming data..." << std::endl;
 		data = data * basis;
+	}
+
+	// ------------------------------------------------------------------------
+	void Field::Save(const std::string &filename, int comps)
+	{
+		std::cout << "Preparing to save..." << std::endl;
+		if (comps <= 0) comps = data.cols();
+		assert(comps <= data.cols());
+
+		// Prepare volume
+		vtkSmartPointer<vtkImageData> volume = 
+			vtkSmartPointer<vtkImageData>::New();
+		volume->SetScalarTypeToFloat();
+		volume->SetDimensions(width, height, depth);
+		volume->SetNumberOfScalarComponents(4);
+		volume->SetSpacing(spacing);
+		volume->SetOrigin(origin);
+		volume->AllocateScalars();
+		float *field = reinterpret_cast<float*>(volume->GetScalarPointer());
+
+		// Save the field in up-to-4-component files
+		int startComp = 0;
+		while (comps > 0)
+		{
+			// Copy the data for this volume
+			if (comps < 4)
+			{
+				volume->SetNumberOfScalarComponents(comps);
+				volume->AllocateScalars();
+			}
+			int numComps = volume->GetNumberOfScalarComponents();
+
+			std::cout << "Saving field" << startComp / 4 << "..." << std::endl;
+
+			for (int i = 0; i < width * height * depth; ++i)
+			{
+				for (int c = 0; c < numComps; ++c)
+				{
+					field[i * numComps + c] = data(i, startComp + c);
+				}
+			}
+
+			// Write the volume to disk
+			std::ostringstream file;
+			file << filename << "_comp" << startComp / 4 << ".mha";
+
+			vtkSmartPointer<vtkMetaImageWriter> writer = 
+				vtkSmartPointer<vtkMetaImageWriter>::New();
+			writer->SetFileName(file.str().c_str());
+			writer->SetInput(volume);
+			writer->Write();
+
+			// Next file / set of components
+			startComp += 4;
+			comps -= 4;
+		}
 	}
 
 	// ------------------------------------------------------------------------

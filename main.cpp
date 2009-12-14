@@ -27,7 +27,8 @@ int main(int argc, char** argv)
 	// Transform extended field to normalized PCA basis
 	field->Transform();
 
-	// TODO: save transformed field as volumes
+	// Save transformed field as volumes
+	field->Save("D:\\Temp\\TestField", 5);
 
 	// TODO: save data transformation matrix
 

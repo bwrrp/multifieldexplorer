@@ -18,8 +18,13 @@ namespace PropertySpace
 
 		void Transform();
 
+		void Save(const std::string &filename, int comps);
+
 	protected:
 		int width, height, depth;
+		double spacing[3];
+		double origin[3];
+
 		itpp::mat data;
 		itpp::vec mean;
 
