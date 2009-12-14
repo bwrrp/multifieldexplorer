@@ -179,7 +179,7 @@ namespace PropertySpace
 		volume->SetSpacing(spacing);
 		volume->SetOrigin(origin);
 		volume->AllocateScalars();
-		float *field = reinterpret_cast<float*>(volume->GetScalarPointer());
+		float *field = static_cast<float*>(volume->GetScalarPointer());
 
 		// Save the field in up-to-4-component files
 		int startComp = 0;
@@ -193,7 +193,8 @@ namespace PropertySpace
 			}
 			int numComps = volume->GetNumberOfScalarComponents();
 
-			std::cout << "Saving field" << startComp / 4 << "..." << std::endl;
+			std::cout << "Saving field " << startComp / 4 << 
+				"..." << std::endl;
 
 			for (int i = 0; i < width * height * depth; ++i)
 			{
@@ -222,12 +223,11 @@ namespace PropertySpace
 	// ------------------------------------------------------------------------
 	void Field::BuildPropertyMatrix(vtkImageData *volume)
 	{
-		// vector, direction and magnitude
 		// TODO: implement Gaussian convolution for derivatives
-		const int numComps = 12;
 
 		// Compute derivatives
 		vtkImageData *gradients[3];
+		double *gfield[3];
 		for (int i = 0; i < 3; ++i)
 		{
 			vtkSmartPointer<vtkImageExtractComponents> comps = 
@@ -241,74 +241,63 @@ namespace PropertySpace
 			grad->Update();
 			gradients[i] = grad->GetOutput();
 			gradients[i]->Register(0);
+			assert(gradients[i]->GetScalarType() == VTK_DOUBLE);
+			gfield[i] = static_cast<double*>(gradients[i]->GetScalarPointer());
 		}
 
+		assert(volume->GetScalarType() == VTK_FLOAT);
+		float *field = static_cast<float*>(volume->GetScalarPointer());
+		int comps = volume->GetNumberOfScalarComponents();
+
 		std::cout << "Building matrix..." << std::endl;
-		data.set_size(width * height * depth, numComps);
-		int row = 0;
-		for (int z = 0; z < depth; ++z)
+		data.set_size(width * height * depth, 12);
+		for (int row = 0; row < width * height * depth; ++row)
 		{
-			for (int y = 0; y < height; ++y)
+			NQVTK::Vector3 v(field[0], field[1], field[2]);
+			field += comps;
+
+			// Vector
+			data(row, 0) = v.x;
+			data(row, 1) = v.y;
+			data(row, 2) = v.z;
+
+			// Direction
+			NQVTK::Vector3 d = v.normalized();
+			data(row, 3) = d.x;
+			data(row, 4) = d.y;
+			data(row, 5) = d.z;
+
+			// Magnitude
+			data(row, 6) = v.length();
+
+			// Derivatives
+			NQVTK::Vector3 ddx(gfield[0][0], gfield[1][0], gfield[2][0]);
+			NQVTK::Vector3 ddy(gfield[0][1], gfield[1][1], gfield[2][1]);
+			NQVTK::Vector3 ddz(gfield[0][2], gfield[1][2], gfield[2][2]);
+			NQVTK::Matrix3x3 jacobian = NQVTK::Matrix3x3::fromCols(
+				ddx, ddy, ddz);
+			gfield[0] += 3;
+			gfield[1] += 3;
+			gfield[2] += 3;
+
+			// Growth
+			double detJ = std::abs(jacobian.det());
+			if (detJ > 1.0)
 			{
-				for (int x = 0; x < width; ++x)
-				{
-					NQVTK::Vector3 v(
-						volume->GetScalarComponentAsDouble(x, y, z, 0), 
-						volume->GetScalarComponentAsDouble(x, y, z, 1), 
-						volume->GetScalarComponentAsDouble(x, y, z, 2));
-
-					// Vector
-					data(row, 0) = v.x;
-					data(row, 1) = v.y;
-					data(row, 2) = v.z;
-
-					// Direction
-					NQVTK::Vector3 d = v.normalized();
-					data(row, 3) = d.x;
-					data(row, 4) = d.y;
-					data(row, 5) = d.z;
-
-					// Magnitude
-					data(row, 6) = v.length();
-
-					// Derivatives
-					NQVTK::Vector3 ddx(
-						gradients[0]->GetScalarComponentAsDouble(x, y, z, 0), 
-						gradients[1]->GetScalarComponentAsDouble(x, y, z, 0), 
-						gradients[2]->GetScalarComponentAsDouble(x, y, z, 0));
-					NQVTK::Vector3 ddy(
-						gradients[0]->GetScalarComponentAsDouble(x, y, z, 1), 
-						gradients[1]->GetScalarComponentAsDouble(x, y, z, 1), 
-						gradients[2]->GetScalarComponentAsDouble(x, y, z, 1));
-					NQVTK::Vector3 ddz(
-						gradients[0]->GetScalarComponentAsDouble(x, y, z, 2), 
-						gradients[1]->GetScalarComponentAsDouble(x, y, z, 2), 
-						gradients[2]->GetScalarComponentAsDouble(x, y, z, 2));
-					NQVTK::Matrix3x3 jacobian = NQVTK::Matrix3x3::fromCols(
-						ddx, ddy, ddz);
-
-					// Growth
-					double detJ = std::abs(jacobian.det());
-					if (detJ > 1.0)
-					{
-						data(row, 7) = 1.0 - (1.0 / detJ);
-					}
-					else
-					{
-						data(row, 7) = detJ - 1.0;
-					}
-
-					// Divergence
-					data(row, 8) = jacobian.trace();
-
-					// Curl
-					data(row, 9) = jacobian.a21 - jacobian.a12;
-					data(row, 10) = jacobian.a02 - jacobian.a20;
-					data(row, 11) = jacobian.a10 - jacobian.a01;
-
-					++row;
-				}
+				data(row, 7) = 1.0 - (1.0 / detJ);
 			}
+			else
+			{
+				data(row, 7) = detJ - 1.0;
+			}
+
+			// Divergence
+			data(row, 8) = jacobian.trace();
+
+			// Curl
+			data(row, 9) = jacobian.a21 - jacobian.a12;
+			data(row, 10) = jacobian.a02 - jacobian.a20;
+			data(row, 11) = jacobian.a10 - jacobian.a01;
 		}
 
 		// Clean up gradients
@@ -334,6 +323,7 @@ namespace PropertySpace
 	void Field::SaveDataTransform(const std::string &filename, int comps)
 	{
 		// Save transformation matrix
+		std::cout << "Saving transform..." << std::endl;
 		itpp::mat transform = basis.get(0, basis.rows() - 1, 0, comps - 1);
 
 		std::ostringstream file;
