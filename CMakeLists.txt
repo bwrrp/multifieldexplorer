@@ -17,6 +17,7 @@ FIND_PACKAGE( VTK REQUIRED )
 INCLUDE( ${VTK_USE_FILE} )
 SET( VTK_lib
 	vtkIO
+	vtkImaging
 )
 
 # We need IT++
@@ -79,6 +80,7 @@ SET( ${ProjectName}_ModuleNames
 SET( ${ProjectName}_Data_Classes
 	Field
 	Vector3
+	Matrix3x3
 )
 
 # --------------------------------------------------

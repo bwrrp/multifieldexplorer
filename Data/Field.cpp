@@ -1,6 +1,8 @@
 #include "Field.h"
 
 #include <vtkImageData.h>
+#include <vtkImageExtractComponents.h>
+#include <vtkImageGradient.h>
 #include <vtkMetaImageReader.h>
 #include <vtkSmartPointer.h>
 #include <vtkXMLImageDataReader.h>
@@ -9,6 +11,7 @@
 #include <itpp/itstat.h>
 
 #include "Vector3.h"
+#include "Matrix3x3.h"
 
 #include <cassert>
 #include <iostream>
@@ -156,7 +159,24 @@ namespace PropertySpace
 	{
 		// vector, direction and magnitude
 		// TODO: implement Gaussian convolution for derivatives
-		const int numComps = 3 + 3 + 1;
+		const int numComps = 12;
+
+		// Compute derivatives
+		vtkImageData *gradients[3];
+		for (int i = 0; i < 3; ++i)
+		{
+			vtkSmartPointer<vtkImageExtractComponents> comps = 
+				vtkSmartPointer<vtkImageExtractComponents>::New();
+			comps->SetInput(volume);
+			comps->SetComponents(i);
+			vtkSmartPointer<vtkImageGradient> grad = 
+				vtkSmartPointer<vtkImageGradient>::New();
+			grad->SetInputConnection(comps->GetOutputPort());
+			grad->SetDimensionality(3);
+			grad->Update();
+			gradients[i] = grad->GetOutput();
+			gradients[i]->Register(0);
+		}
 
 		std::cout << "Building matrix..." << std::endl;
 		data.set_size(width * height * depth, numComps);
@@ -186,9 +206,50 @@ namespace PropertySpace
 					// Magnitude
 					data(row, 6) = v.length();
 
+					// Derivatives
+					NQVTK::Vector3 ddx(
+						gradients[0]->GetScalarComponentAsDouble(x, y, z, 0), 
+						gradients[1]->GetScalarComponentAsDouble(x, y, z, 0), 
+						gradients[2]->GetScalarComponentAsDouble(x, y, z, 0));
+					NQVTK::Vector3 ddy(
+						gradients[0]->GetScalarComponentAsDouble(x, y, z, 1), 
+						gradients[1]->GetScalarComponentAsDouble(x, y, z, 1), 
+						gradients[2]->GetScalarComponentAsDouble(x, y, z, 1));
+					NQVTK::Vector3 ddz(
+						gradients[0]->GetScalarComponentAsDouble(x, y, z, 2), 
+						gradients[1]->GetScalarComponentAsDouble(x, y, z, 2), 
+						gradients[2]->GetScalarComponentAsDouble(x, y, z, 2));
+					NQVTK::Matrix3x3 jacobian = NQVTK::Matrix3x3::fromCols(
+						ddx, ddy, ddz);
+
+					// Growth
+					double detJ = std::abs(jacobian.det());
+					if (detJ > 1.0)
+					{
+						data(row, 7) = 1.0 - (1.0 / detJ);
+					}
+					else
+					{
+						data(row, 7) = detJ - 1.0;
+					}
+
+					// Divergence
+					data(row, 8) = jacobian.trace();
+
+					// Curl
+					data(row, 9) = jacobian.a21 - jacobian.a12;
+					data(row, 10) = jacobian.a02 - jacobian.a20;
+					data(row, 11) = jacobian.a10 - jacobian.a01;
+
 					++row;
 				}
 			}
+		}
+
+		// Clean up gradients
+		for (int i = 0; i < 3; ++i)
+		{
+			gradients[i]->Delete();
 		}
 
 		// Compute mean
