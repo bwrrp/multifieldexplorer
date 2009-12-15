@@ -15,6 +15,7 @@
 #include "Matrix3x3.h"
 
 #include <cassert>
+#include <fstream>
 #include <iostream>
 #include <sstream>
 
@@ -326,10 +327,24 @@ namespace PropertySpace
 		std::cout << "Saving transform..." << std::endl;
 		itpp::mat transform = basis.get(0, basis.rows() - 1, 0, comps - 1);
 
-		std::ostringstream file;
-		file << filename << "_transform.itpp";
+		std::ostringstream fullFileName;
+		fullFileName << filename << "_transform.dat";
 
-		itpp::it_file transformFile(file.str(), true);
-		transformFile << itpp::Name("transform") << transform;
+		std::ofstream transformFile(fullFileName.str().c_str(), 
+			std::ios::out | std::ios::binary | std::ios::trunc);
+
+		if (transformFile.is_open())
+		{
+			// Save dimensions
+			transformFile << transform.cols() << transform.rows();
+			// Save data - each column is a basis vector
+			for (int col = 0; col < transform.cols(); ++col)
+			{
+				for (int row = 0; row < transform.rows(); ++row)
+				{
+					transformFile << transform(row, col);
+				}
+			}
+		}
 	}
 }
