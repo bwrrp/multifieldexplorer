@@ -337,13 +337,17 @@ namespace PropertySpace
 		if (transformFile.is_open())
 		{
 			// Save dimensions
-			transformFile << transform.cols() << transform.rows();
+			int val = transform.cols();
+			transformFile.write((char*)&val, sizeof(val));
+			val = transform.rows();
+			transformFile.write((char*)&val, sizeof(val));
 			// Save data - each column is a basis vector
 			for (int col = 0; col < transform.cols(); ++col)
 			{
 				for (int row = 0; row < transform.rows(); ++row)
 				{
-					transformFile << transform(row, col);
+					double v = transform(row, col);
+					transformFile.write((char*)&v, sizeof(v));
 				}
 			}
 		}
