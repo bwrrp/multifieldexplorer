@@ -165,7 +165,8 @@ namespace PropertySpace
 	void Field::Save(const std::string &filename, int comps)
 	{
 		if (comps <= 0) comps = data.cols();
-		assert(comps <= data.cols());
+		if (comps > data.cols()) comps = data.cols();
+		std::cout << "Saving " << comps << " components..." << std::endl;
 
 		// Save transform
 		SaveDataTransform(filename, comps);

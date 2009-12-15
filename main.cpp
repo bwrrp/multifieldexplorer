@@ -1,5 +1,6 @@
 #include "Data/Field.h"
 
+#include <cstdlib>
 #include <iostream>
 
 int main(int argc, char** argv)
@@ -15,6 +16,12 @@ int main(int argc, char** argv)
 		std::cerr << "Specify output filename on the command line" << 
 			std::endl;
 		return 1;
+	}
+
+	int numComps = 0;
+	if (argc >= 4)
+	{
+		numComps = atoi(argv[3]);
 	}
 
 	// Load the field
@@ -33,7 +40,7 @@ int main(int argc, char** argv)
 	field->Transform();
 
 	// Save transformed field as volumes
-	field->Save(argv[2], 6);
+	field->Save(argv[2], numComps);
 
 	// Clean up
 	delete field;
