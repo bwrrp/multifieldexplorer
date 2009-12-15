@@ -7,7 +7,6 @@ int main(int argc, char** argv)
 	if (argc < 2)
 	{
 		std::cerr << "Specify field to load on the command line" << std::endl;
-		getchar();
 		return 1;
 	}
 
@@ -17,7 +16,6 @@ int main(int argc, char** argv)
 	if (!field)
 	{
 		std::cerr << "Error loading field" << std::endl;
-		getchar();
 		return 1;
 	}
 
@@ -33,8 +31,10 @@ int main(int argc, char** argv)
 	// Clean up
 	delete field;
 
+#ifndef NDEBUG
 	// Keep the console window open for testing
 	std::cout << "Press any enter to exit" << std::endl;
 	getchar();
+#endif
 	return 0;
 }
