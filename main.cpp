@@ -10,6 +10,13 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
+	if (argc < 3)
+	{
+		std::cerr << "Specify output filename on the command line" << 
+			std::endl;
+		return 1;
+	}
+
 	// Load the field
 	std::cout << "Loading field..." << std::endl;
 	PropertySpace::Field *field = PropertySpace::Field::Load(argv[1]);
@@ -26,7 +33,7 @@ int main(int argc, char** argv)
 	field->Transform();
 
 	// Save transformed field as volumes
-	field->Save("D:\\Temp\\TestField", 6);
+	field->Save(argv[2], 6);
 
 	// Clean up
 	delete field;
