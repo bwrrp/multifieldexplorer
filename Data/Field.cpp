@@ -336,9 +336,10 @@ namespace PropertySpace
 
 		if (transformFile.is_open())
 		{
-			// Save dimensions
+			// Save number of basis vectors
 			int val = transform.cols();
 			transformFile.write((char*)&val, sizeof(val));
+			// Save dimensionality of the original space
 			val = transform.rows();
 			transformFile.write((char*)&val, sizeof(val));
 			// Save data - each column is a basis vector
@@ -349,6 +350,12 @@ namespace PropertySpace
 					double v = transform(row, col);
 					transformFile.write((char*)&v, sizeof(v));
 				}
+			}
+			// Save mean (in original space)
+			for (int i = 0; i < mean.size(); ++i)
+			{
+				double v = mean(i);
+				transformFile.write((char*)&v, sizeof(v));
 			}
 		}
 	}
