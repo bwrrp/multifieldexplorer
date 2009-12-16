@@ -57,6 +57,7 @@ namespace MFE
 	// ------------------------------------------------------------------------
 	void FeatureWidget::CreatePropertyWidgets()
 	{
+		/*
 		// Create a dummy feature to get the properties
 		Feature f;
 		// Get layout
@@ -100,11 +101,13 @@ namespace MFE
 			valueIndex += size;
 			++row;
 		}
+		*/
 	}
 
 	// ------------------------------------------------------------------------
 	void FeatureWidget::UpdatePropertyWidgets()
 	{
+		/*
 		if (!feature) return;
 		FeatureVector &fv = feature->mask;
 
@@ -116,6 +119,7 @@ namespace MFE
 			slider->setValue(0.5 + 100.0 * fv.values[valueIndex]);
 			valueIndex += size;
 		}
+		*/
 	}
 
 	// ------------------------------------------------------------------------
@@ -169,11 +173,13 @@ namespace MFE
 	{
 		if (!feature) return;
 
+		/*
 		FeatureVector &fv = feature->mask;
 		if (fv.values[index] != value)
 		{
 			fv.values[index] = value;
 			if (feature->enabled) emit Updated();
 		}
+		*/
 	}
 }

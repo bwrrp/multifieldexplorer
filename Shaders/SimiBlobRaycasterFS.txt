@@ -5,6 +5,8 @@
 #extension GL_EXT_gpu_shader4 : enable
 #endif
 
+#define MFE_PROPERTYCOUNT 4
+
 uniform sampler2DRect info0Previous;
 uniform sampler2DRect info0Current;
 uniform sampler2DRect info1Current;
@@ -26,13 +28,7 @@ uniform float kernelSize;
 
 struct FeatureVector
 {
-	vec3 position;
-	vec3 vector;
-	vec3 direction;
-	float magnitude;
-	float growth;
-	float divergence;
-	vec3 curl;
+	float v[MFE_PROPERTYCOUNT];
 };
 
 struct Feature
@@ -40,7 +36,7 @@ struct Feature
 	bool enabled;
 	vec3 examplePos;
 	FeatureVector example;
-	FeatureVector mask;
+	FeatureVector weights;
 	float startThreshold;
 	float endThreshold;
 	float power;
@@ -55,117 +51,42 @@ vec3 phongShading(vec3 matColor, vec3 normal);
 bool getBit(float byte, int bit);
 float setBit(float byte, int bit, bool on);
 
-// Get vector from volume
-vec3 getVector(int v, vec3 pos)
-{
-	vec4 tpos = gl_TextureMatrixInverse[v] * vec4(pos, 1.0);
-	vec3 p = ((tpos.xyz / tpos.w) - volumeOrigin[v]) / volumeSize[v];
-	return vec3(volumeDataShift[v]) + volumeDataScale[v] * texture3D(volume[v], p).xyz;
-}
-
-// Linear Jacobian
-mat3 jacobian(int v, vec3 pos, float delta, vec3 val)
-{
-#ifdef NQVTK_RAYCASTER_CENTRALDIFFERENCES
-	vec3 dx = (getVector(v, pos + vec3(0.5 * delta, 0.0, 0.0)) - 
-		getVector(v, pos - vec3(0.5 * delta, 0.0, 0.0))) / delta;
-	vec3 dy = (getVector(v, pos + vec3(0.0, 0.5 * delta, 0.0)) - 
-		getVector(v, pos - vec3(0.0, 0.5 * delta, 0.0))) / delta;
-	vec3 dz = (getVector(v, pos + vec3(0.0, 0.0, 0.5 * delta)) - 
-		getVector(v, pos - vec3(0.0, 0.0, 0.5 * delta))) / delta;
-#else
-	vec3 dx = (getVector(v, pos + vec3(delta, 0.0, 0.0)) - val) / delta;
-	vec3 dy = (getVector(v, pos + vec3(0.0, delta, 0.0)) - val) / delta;
-	vec3 dz = (getVector(v, pos + vec3(0.0, 0.0, delta)) - val) / delta;
-#endif
-	// Add identity (because we should have used pos + vec instead of vec)
-	return mat3(dx, dy, dz) + mat3(1.0);
-}
-
-// Compute determinant of matrix
-float determinant(mat3 m)
-{
-	return m[0][0] * m[1][1] * m[2][2] 
-		+ m[0][1] * m[1][2] * m[2][0] 
-		+ m[0][2] * m[1][0] * m[2][1] 
-		- m[0][2] * m[1][1] * m[2][0] 
-		- m[0][1] * m[1][0] * m[2][2] 
-		- m[0][0] * m[1][2] * m[2][1];
-}
-
-// Compute trace of matrix
-float trace(mat3 m)
-{
-	return m[0][0] + m[1][1] + m[2][2];
-}
-
-// Compute curl given Jacobian
-vec3 curl(mat3 j)
-{
-	return vec3(
-		j[2][1] - j[1][2], 
-		j[0][2] - j[2][0], 
-		j[1][0] - j[0][1]);
-}
-
-// Compute growth measure given Jacobian
-float growth(mat3 j)
-{
-	float detJ = abs(determinant(j));
-	float g = 0.0;
-	if (detJ > 1.0) 
-		g = 1.0 - (1.0 / detJ);
-	else
-		g = detJ - 1.0;
-	return g + 0.5;
-}
-
 FeatureVector getFeatureVector(vec3 pos)
 {
 	FeatureVector result;
-	result.position = pos;
-	result.vector = getVector(0, pos);
-	result.direction = normalize(result.vector);
-	result.magnitude = length(result.vector);
 
-	// Compute derivatives
-	mat3 j = jacobian(0, pos, kernelSize, result.vector);
-	result.growth = growth(j);
-	result.divergence = trace(j);
-	result.curl = curl(j);
+	const int numVolumes = (MFE_PROPERTYCOUNT + 3) / 4;
+	for (int v = 0; v < numVolumes; ++v)
+	{
+		vec4 tpos = gl_TextureMatrixInverse[v] * vec4(pos, 1.0);
+		vec3 p = ((tpos.xyz / tpos.w) - volumeOrigin[v]) / volumeSize[v];
+		vec4 comps = vec4(volumeDataShift[v]) + 
+			volumeDataScale[v] * texture3D(volume[v], p);
+		for (int i = 0; i < 4; ++i)
+		{
+			int c = v * 4 + i;
+			if (c < MFE_PROPERTYCOUNT) result.v[c] = comps[i];
+		}
+	}
+
 	return result;
 }
 
 float distance(FeatureVector a, FeatureVector b, 
-	FeatureVector mask, float power)
+	FeatureVector weights, float power)
 {
 	float sum = 0.0;
-	vec3 v;
-	// pos
-	v = mask.position * pow(abs(a.position - b.position), vec3(power));
-	sum += v.x + v.y + v.z;
-	// vector
-	v = mask.vector * pow(abs(a.vector - b.vector), vec3(power));
-	sum += v.x + v.y + v.z;
-	// dir
-	v = mask.direction * pow(abs(a.direction - b.direction), vec3(power));
-	sum += v.x + v.y + v.z;
-	// magnitude
-	sum += mask.magnitude * pow(abs(a.magnitude - b.magnitude), power);
-	// growth
-	sum += mask.growth * pow(abs(a.growth - b.growth), power);
-	// divergence
-	sum += mask.divergence * pow(abs(a.divergence - b.divergence), power);
-	// curl
-	v = mask.curl * pow(abs(a.curl - b.curl), vec3(power));
-	sum += v.x + v.y + v.z;
+	for (int i = 0; i < MFE_PROPERTYCOUNT; ++i)
+	{
+		sum += pow(weights.v[i] * abs(a.v[i] - b.v[i]), power);
+	}
 	return pow(sum, 1.0/power);
 }
 
 float getValue(Feature f, FeatureVector fv)
 {
 	// Compute distance
-	return distance(fv, f.example, f.mask, f.power);
+	return distance(fv, f.example, f.weights, f.power);
 }
 
 float getValue(Feature f, vec3 pos)
@@ -261,6 +182,10 @@ void main()
 			if (f < numActiveFeatures)
 			{
 				features[f] = userFeatures[f];
+				features[f].weights.v[0] = 1.0;
+				features[f].weights.v[1] = 1.0;
+				features[f].weights.v[2] = 1.0;
+				features[f].weights.v[3] = 1.0;
 			}
 			else
 			{
@@ -282,12 +207,8 @@ void main()
 		bool hit[MFE_FEATURECOUNT];
 		vec3 refined[MFE_FEATURECOUNT];
 		vec3 gradient[MFE_FEATURECOUNT];
-		// Conditional sampler indices are not supported by current 
-		// hardware, so we compute all features from volume 0...
-		// Code-generation for the getFeatureVector function could help
-		// for multi-field data using multiple volumes. For multi-scale 
-		// we have to treat each scale's properties as separate 
-		// dimensions and always sample all of them...
+		// Conditional sampler indices are not supported by current hardware, 
+		// so multi-fields are limited to fully overlapping volumes...
 		bool inVolume = getBit(infoBefore.a, 0);
 		for (int f = 0; f < MFE_FEATURECOUNT; ++f)
 		{

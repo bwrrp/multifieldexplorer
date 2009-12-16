@@ -56,11 +56,10 @@ namespace MFE
 
 		// Quick sanity check
 		bool ok = volume != 0 && 
-			(volume->GetDataDimension() == 3) && 
-			(volume->GetNumberOfScalarComponents() == 3);
+			(volume->GetDataDimension() == 3);
 		if (!ok) 
 		{
-			qDebug("Not a vector volume!");
+			qDebug("Not a volume!");
 			volume->Delete();
 			volume = 0;
 		}
@@ -114,6 +113,13 @@ namespace MFE
 	// ------------------------------------------------------------------------
 	Field *Field::Load(const QString &filename)
 	{
+		// TODO: load file containing component files, transform and properties
+
+		// TODO: load each component file
+		// TODO: determine number of components, set up shaders
+		// TODO: load transform
+		// TODO: setup property widgets
+
 		// Load the field
 		vtkImageData *vtkvolume = LoadVolume(filename);
 		if (!vtkvolume)
