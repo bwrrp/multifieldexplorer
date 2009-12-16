@@ -2,14 +2,14 @@
 #include "FeatureList.moc"
 
 #include "Data/Feature.h"
-#include "Data/VectorField.h"
+#include "Data/Field.h"
 
 #include <QListWidgetItem>
 #include <QString>
 
 #include <cassert>
 
-namespace VFE
+namespace MFE
 {
 	// ------------------------------------------------------------------------
 	FeatureList::FeatureList(QWidget *parent) : QWidget(parent), field(0)
@@ -19,7 +19,7 @@ namespace VFE
 	}
 
 	// ------------------------------------------------------------------------
-	void FeatureList::SetField(VectorField *field)
+	void FeatureList::SetField(Field *field)
 	{
 		if (this->field)
 		{

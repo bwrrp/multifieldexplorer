@@ -7,9 +7,9 @@
 
 #include "RenderControls.h"
 
-namespace VFE
+namespace MFE
 {
-	class VectorField;
+	class Field;
 
 	class MainWindow : public QMainWindow
 	{
@@ -29,7 +29,7 @@ namespace VFE
 
 		RenderControls *rcdialog;
 
-		VectorField *field;
+		Field *field;
 
 	private slots:
 		void on_actionLoad_triggered();

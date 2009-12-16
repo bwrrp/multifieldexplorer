@@ -6,7 +6,7 @@
 
 #include <NQVTK/Math/Vector3.h>
 
-namespace VFE
+namespace MFE
 {
 	// Only classes derived from QObject can emit signals, 
 	// therefore we use a separate messenger object.

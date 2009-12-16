@@ -4,7 +4,7 @@
 
 #include <sstream>
 
-namespace VFE
+namespace MFE
 {
 	// ------------------------------------------------------------------------
 	Property::Property(const std::string &name, PropertyType type)

@@ -1,6 +1,6 @@
 #include "SliceRenderer.h"
 
-#include "Data/VectorField.h"
+#include "Data/Field.h"
 
 #include <GLBlaat/GLProgram.h>
 
@@ -17,7 +17,7 @@
 #include <sstream>
 #include <string>
 
-namespace VFE
+namespace MFE
 {
 	// ------------------------------------------------------------------------
 	// Helper function
@@ -134,7 +134,7 @@ namespace VFE
 	}
 
 	// ------------------------------------------------------------------------
-	void SliceRenderer::SetField(VectorField *field)
+	void SliceRenderer::SetField(Field *field)
 	{
 		this->field = field;
 	}

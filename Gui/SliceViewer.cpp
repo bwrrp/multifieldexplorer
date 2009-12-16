@@ -2,7 +2,7 @@
 #include "SliceViewer.h"
 #include "SliceViewer.moc"
 
-#include "Data/VectorField.h"
+#include "Data/Field.h"
 #include "SelectionSliceViewInteractor.h"
 #include "Rendering/SliceRenderer.h"
 
@@ -12,7 +12,7 @@
 
 #include <NQVTK/Rendering/Camera.h>
 
-namespace VFE
+namespace MFE
 {
 	// ------------------------------------------------------------------------
 	SliceViewer::SliceViewer(QWidget *parent) : NQVTKWidget(parent)
@@ -45,7 +45,7 @@ namespace VFE
 	}
 
 	// ------------------------------------------------------------------------
-	void SliceViewer::SetField(VectorField *field)
+	void SliceViewer::SetField(Field *field)
 	{
 		GetRenderer()->SetScene(field->GetScene());
 		SliceRenderer *sr = dynamic_cast<SliceRenderer*>(GetRenderer());

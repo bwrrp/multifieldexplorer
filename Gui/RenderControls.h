@@ -4,7 +4,7 @@
 
 #include "ui_RenderControls.h"
 
-namespace VFE
+namespace MFE
 {
 	class MainViewer;
 	class SliceViewer;

@@ -1,7 +1,7 @@
 #include "PropertySlider.h"
 #include "PropertySlider.moc"
 
-namespace VFE
+namespace MFE
 {
 	// ------------------------------------------------------------------------
 	PropertySlider::PropertySlider(int baseIndex, int numSignals, 

@@ -7,11 +7,11 @@
 #include <NQVTK/Rendering/ArcballCamera.h>
 #include <NQVTK/Rendering/LayeredRaycastingRenderer.h>
 
-#include "Data/VectorField.h"
+#include "Data/Field.h"
 
-#include "Rendering/VectorNPRStyle.h"
+#include "Rendering/SimiBlobStyle.h"
 
-namespace VFE
+namespace MFE
 {
 	// ------------------------------------------------------------------------
 	MainViewer::MainViewer(QWidget *parent) : NQVTKWidget(parent), field(0)
@@ -19,7 +19,7 @@ namespace VFE
 		NQVTK::LayeredRaycastingRenderer *renderer = 
 			new NQVTK::LayeredRaycastingRenderer();
 
-		style = new VectorNPRStyle();
+		style = new SimiBlobStyle();
 		renderer->SetStyle(style);
 
 		NQVTK::ArcballCamera *camera = new NQVTK::ArcballCamera();
@@ -35,7 +35,7 @@ namespace VFE
 	}
 
 	// ------------------------------------------------------------------------
-	void MainViewer::SetField(VectorField *field)
+	void MainViewer::SetField(Field *field)
 	{
 		this->field = field;
 		GetRenderer()->SetScene(field->GetScene());

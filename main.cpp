@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
 	// Set up Qt application
 	QApplication app(argc, argv);
 
-	VFE::MainWindow *window = new VFE::MainWindow();
+	MFE::MainWindow *window = new MFE::MainWindow();
 
 	// If a field was specified on the command line, load it
 	QStringList args = app.arguments();

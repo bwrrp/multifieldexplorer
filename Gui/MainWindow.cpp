@@ -2,7 +2,7 @@
 #include "MainWindow.moc"
 
 #include "Data/Feature.h"
-#include "Data/VectorField.h"
+#include "Data/Field.h"
 
 #include <NQVTK/Rendering/Renderer.h>
 #include <NQVTK/Rendering/Scene.h>
@@ -14,7 +14,7 @@
 #include <QFileDialog>
 #include <QImage>
 
-namespace VFE
+namespace MFE
 {
 	// ------------------------------------------------------------------------
 	MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), field(0)
@@ -48,10 +48,10 @@ namespace VFE
 	// ------------------------------------------------------------------------
 	void MainWindow::LoadField(const QString &filename)
 	{
-		VectorField *newField = VectorField::Load(filename);
+		Field *newField = Field::Load(filename);
 		if (newField)
 		{
-			VectorField *oldField = field;
+			Field *oldField = field;
 			field = newField;
 
 			ui.mainViewer->SetField(field);
@@ -75,7 +75,7 @@ namespace VFE
 	{
 		// Show open dialog
 		QString filename = QFileDialog::getOpenFileName(
-			this, "Load vector field", QString(), 
+			this, "Load field", QString(), 
 			"Volume data (*.vti *.mha *.mhd);;"
 			"VTK volumes (*.vti);;"
 			"MetaImage files (*.mha *.mhd)");
@@ -121,13 +121,13 @@ namespace VFE
 		screenshot.invertPixels(QImage::InvertRgba);
 		screenshot.invertPixels(QImage::InvertRgb);
 		// Save it
-		screenshot.save(QString("VFE-%1.png").arg(
+		screenshot.save(QString("MFE-%1.png").arg(
 			now.toString("yyMMdd-hhmmss")), "PNG");
 	}
 
 	// ------------------------------------------------------------------------
 	void MainWindow::on_mainViewer_fpsChanged(int fps)
 	{
-		setWindowTitle(QString("Vector Field Explorer - %1 fps").arg(fps));
+		setWindowTitle(QString("Multi-Field Explorer - %1 fps").arg(fps));
 	}
 }

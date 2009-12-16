@@ -4,10 +4,10 @@
 
 #include <NQVTK/Math/Vector3.h>
 
-namespace VFE
+namespace MFE
 {
-	class VectorField;
-	class VectorNPRStyle;
+	class Field;
+	class SimiBlobStyle;
 
 	class MainViewer : public NQVTKWidget
 	{
@@ -17,12 +17,12 @@ namespace VFE
 		MainViewer(QWidget *parent = 0);
 		virtual ~MainViewer();
 
-		void SetField(VectorField *field);
+		void SetField(Field *field);
 
-		VectorNPRStyle *GetStyle() { return style; }
+		SimiBlobStyle *GetStyle() { return style; }
 
 	private:
-		VectorField *field;
-		VectorNPRStyle *style;
+		Field *field;
+		SimiBlobStyle *style;
 	};
 }

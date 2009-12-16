@@ -7,7 +7,7 @@
 
 class GLProgram;
 
-namespace VFE
+namespace MFE
 {
 	class Property
 	{

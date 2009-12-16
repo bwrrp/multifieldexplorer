@@ -4,9 +4,9 @@
 
 #include <NQVTK/Math/Vector3.h>
 
-namespace VFE
+namespace MFE
 {
-	class VectorField;
+	class Field;
 	class SliceRenderer;
 
 	class SliceViewer : public NQVTKWidget
@@ -19,7 +19,7 @@ namespace VFE
 		SliceViewer(QWidget *parent = 0);
 		virtual ~SliceViewer();
 
-		void SetField(VectorField *field);
+		void SetField(Field *field);
 
 	signals:
 		void CursorPosChanged(NQVTK::Vector3 pos);

@@ -2,9 +2,9 @@
 
 #include <NQVTK/Rendering/SliceRenderer.h>
 
-namespace VFE
+namespace MFE
 {
-	class VectorField;
+	class Field;
 
 	class SliceRenderer : public NQVTK::SliceRenderer
 	{
@@ -17,12 +17,12 @@ namespace VFE
 
 		void SceneChanged();
 
-		void SetField(VectorField *field);
+		void SetField(Field *field);
 
 		float kernelSize;
 
 	protected:
-		VectorField *field;
+		Field *field;
 
 		float unitSize;
 

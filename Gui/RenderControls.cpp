@@ -4,12 +4,12 @@
 #include <NQVTK/Rendering/LayeredRaycastingRenderer.h>
 
 #include "Rendering/SliceRenderer.h"
-#include "Rendering/VectorNPRStyle.h"
+#include "Rendering/SimiBlobStyle.h"
 
 #include "MainViewer.h"
 #include "SliceViewer.h"
 
-namespace VFE
+namespace MFE
 {
 	// ------------------------------------------------------------------------
 	RenderControls::RenderControls(MainViewer *mainViewer, 
@@ -44,7 +44,7 @@ namespace VFE
 	// ------------------------------------------------------------------------
 	void RenderControls::on_stepSize_valueChanged(int value)
 	{
-		VectorNPRStyle *style = mainViewer->GetStyle();
+		SimiBlobStyle *style = mainViewer->GetStyle();
 		float v = static_cast<float>(value) / 100.0;
 		ui.stepSizeReadout->setText(QString("%1").arg(v, 0, 'f', 2));
 		style->stepSize = v;
@@ -54,7 +54,7 @@ namespace VFE
 	// ------------------------------------------------------------------------
 	void RenderControls::on_kernelSize_valueChanged(int value)
 	{
-		VectorNPRStyle *style = mainViewer->GetStyle();
+		SimiBlobStyle *style = mainViewer->GetStyle();
 		float v = static_cast<float>(value) / 100.0;
 		ui.kernelSizeReadout->setText(QString("%1").arg(v, 0, 'f', 2));
 		style->kernelSize = v;		

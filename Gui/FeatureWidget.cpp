@@ -8,7 +8,7 @@
 
 #include "PropertySlider.h"
 
-namespace VFE
+namespace MFE
 {
 	// ------------------------------------------------------------------------
 	FeatureWidget::FeatureWidget(QWidget *parent) : QWidget(parent)

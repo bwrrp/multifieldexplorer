@@ -3,7 +3,7 @@
 
 #include <NQVTK/Rendering/SliceRenderer.h>
 
-namespace VFE
+namespace MFE
 {
 	// ------------------------------------------------------------------------
 	void SelectionMessenger::EmitCursorPosChanged(const NQVTK::Vector3 &pos)

@@ -3,7 +3,7 @@
 #include <QSlider>
 #include <QString>
 
-namespace VFE
+namespace MFE
 {
 	class PropertySlider : public QSlider
 	{

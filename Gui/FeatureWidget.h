@@ -6,7 +6,7 @@
 
 class QLabel;
 
-namespace VFE
+namespace MFE
 {
 	class Feature;
 	class PropertySlider;

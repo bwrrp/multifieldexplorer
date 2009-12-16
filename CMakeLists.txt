@@ -1,6 +1,6 @@
 # --------------------------------------------------
 # Project name
-SET( ProjectName VectorFieldExplorer )
+SET( ProjectName MultiFieldExplorer )
 PROJECT( ${ProjectName} )
 
 # --------------------------------------------------
@@ -82,12 +82,12 @@ SET( ${ProjectName}_Gui_Classes
 )
 
 SET( ${ProjectName}_Data_Classes
-	VectorField
+	Field
 	Feature
 )
 
 SET( ${ProjectName}_Rendering_Classes
-	VectorNPRStyle
+	SimiBlobStyle
 	SliceRenderer
 )
 
@@ -101,7 +101,7 @@ SET( ${ProjectName}_ExtraSource
 IF( WIN32 )
 	SET( ${ProjectName}_ExtraSource
 		${${ProjectName}_ExtraSource}
-		vfe.rc
+		mfe.rc
 	)
 ENDIF( WIN32 )
 

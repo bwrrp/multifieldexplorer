@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Vector Field Explorer</string>
+   <string>Multi-Field Explorer</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -27,7 +27,7 @@
        <number>6</number>
       </property>
       <item>
-       <widget class="VFE::MainViewer" name="mainViewer" native="true">
+       <widget class="MFE::MainViewer" name="mainViewer" native="true">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
           <horstretch>0</horstretch>
@@ -37,7 +37,7 @@
        </widget>
       </item>
       <item>
-       <widget class="VFE::SliceViewer" name="sliceViewer" native="true">
+       <widget class="MFE::SliceViewer" name="sliceViewer" native="true">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
           <horstretch>0</horstretch>
@@ -64,7 +64,7 @@
       </property>
       <layout class="QHBoxLayout" name="controlPanelLayout">
        <item>
-        <widget class="VFE::FeatureList" name="featureList" native="true">
+        <widget class="MFE::FeatureList" name="featureList" native="true">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
            <horstretch>1</horstretch>
@@ -80,7 +80,7 @@
         </widget>
        </item>
        <item>
-        <widget class="VFE::FeatureWidget" name="featureEditor" native="true">
+        <widget class="MFE::FeatureWidget" name="featureEditor" native="true">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
            <horstretch>0</horstretch>
@@ -106,7 +106,7 @@
    </property>
    <widget class="QMenu" name="menuApp">
     <property name="title">
-     <string>&amp;VFE</string>
+     <string>&amp;MFE</string>
     </property>
     <addaction name="actionLoad"/>
     <addaction name="separator"/>
@@ -127,10 +127,10 @@
   </widget>
   <action name="actionLoad">
    <property name="text">
-    <string>&amp;Load vector field...</string>
+    <string>&amp;Load field...</string>
    </property>
    <property name="toolTip">
-    <string>Load Vector Field</string>
+    <string>Load Multi-Field</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
@@ -179,25 +179,25 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>VFE::MainViewer</class>
+   <class>MFE::MainViewer</class>
    <extends>QWidget</extends>
    <header>Gui/MainViewer.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>VFE::SliceViewer</class>
+   <class>MFE::SliceViewer</class>
    <extends>QWidget</extends>
    <header>Gui/SliceViewer.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>VFE::FeatureWidget</class>
+   <class>MFE::FeatureWidget</class>
    <extends>QWidget</extends>
    <header>FeatureWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>VFE::FeatureList</class>
+   <class>MFE::FeatureList</class>
    <extends>QWidget</extends>
    <header>FeatureList.h</header>
    <container>1</container>

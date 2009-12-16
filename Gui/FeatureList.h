@@ -6,10 +6,10 @@
 
 #include <NQVTK/Math/Vector3.h>
 
-namespace VFE
+namespace MFE
 {
 	class Feature;
-	class VectorField;
+	class Field;
 
 	class FeatureList : public QWidget
 	{
@@ -18,7 +18,7 @@ namespace VFE
 	public:
 		FeatureList(QWidget *parent = 0);
 
-		void SetField(VectorField *field);
+		void SetField(Field *field);
 
 	public slots:
 		void SetCursorPos(NQVTK::Vector3);
@@ -31,7 +31,7 @@ namespace VFE
 
 	protected:
 		Ui::FeatureList ui;
-		VectorField *field;
+		Field *field;
 
 	private slots:
 		void UpdateFeature(int num);
