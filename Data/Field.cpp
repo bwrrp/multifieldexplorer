@@ -113,11 +113,14 @@ namespace MFE
 	// ------------------------------------------------------------------------
 	Field *Field::Load(const QString &filename)
 	{
-		// TODO: load file containing component files, transform and properties
+		// TODO: load field description file, containing...
+		//        - references to field component files
+		//        - a reference to the transform basis / mean file
+		//        - a (reference to a?) list of property names (for GUI)
 
 		// TODO: load each component file
 		// TODO: determine number of components, set up shaders
-		// TODO: load transform
+		// TODO: load transform, check number of components
 		// TODO: setup property widgets
 
 		// Load the field
