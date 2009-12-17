@@ -78,7 +78,7 @@ float distance(FeatureVector a, FeatureVector b,
 	float sum = 0.0;
 	for (int i = 0; i < MFE_PROPERTYCOUNT; ++i)
 	{
-		sum += pow(weights.v[i] * abs(a.v[i] - b.v[i]), power);
+		sum += pow(weights.v[i] * (a.v[i] - b.v[i]), power);
 	}
 	return pow(sum, 1.0/power);
 }
@@ -118,7 +118,7 @@ vec3 computeGradient(Feature f, vec3 pos, float delta, float val)
 bool isInside(Feature f, float val)
 {
 	return f.startThreshold <= f.endThreshold ? 
-		(val > f.startThreshold && val < f.endThreshold) :
+		(val >= f.startThreshold && val < f.endThreshold) :
 		(val < f.endThreshold || val > f.startThreshold);
 }
 
@@ -198,6 +198,19 @@ void main()
 				features[f].example = 
 					getFeatureVector(features[f].examplePos);
 			}
+		}
+
+		float l = 0.0;
+		for (int i = 0; i < MFE_PROPERTYCOUNT; ++i)
+		{
+			features[0].weights.v[i] = features[0].example.v[i];
+			l += features[0].weights.v[i] * features[0].weights.v[i];
+		}
+		// Normalize
+		l = 1.0 / sqrt(l);
+		for (int i = 0; i < MFE_PROPERTYCOUNT; ++i)
+		{
+			features[0].weights.v[i] = features[0].weights.v[i] * l;
 		}
 
 		// Start raycasting

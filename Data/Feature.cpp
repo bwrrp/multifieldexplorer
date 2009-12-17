@@ -33,7 +33,7 @@ namespace MFE
 		for (unsigned int i = 0; i < weights.size(); ++i)
 		{
 			std::ostringstream wname;
-			wname << feature.str() << "weights[" << i << "]";
+			wname << feature.str() << "weights.v[" << i << "]";
 			program->SetUniform1f(wname.str(), weights[i]);
 		}
 		// Setup other parameters
