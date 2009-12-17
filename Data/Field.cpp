@@ -88,7 +88,7 @@ namespace PropertySpace
 		{
 			itpp::vec evec = unsortedEigVecs.get_col(index(col));
 			double eval = unsortedEigVals(index(col));
-			const double epsilon = 0.000001;
+			const double epsilon = 0.0;
 			if (eval > epsilon)
 			{
 				eigVecs.set_col(comp, evec);

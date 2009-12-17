@@ -6,8 +6,8 @@
 
 int main(int argc, char** argv)
 {
-	//typedef PropertySpace::Field FieldType;
-	typedef PropertySpace::VectorFieldWithDerivatives FieldType;
+	typedef PropertySpace::Field FieldType;
+	//typedef PropertySpace::VectorFieldWithDerivatives FieldType;
 
 	if (argc < 2)
 	{
@@ -30,7 +30,7 @@ int main(int argc, char** argv)
 
 	// Load the field
 	std::cout << "Loading field..." << std::endl;
-	FieldType *field = FieldType::Load(argv[1]);
+	PropertySpace::Field *field = FieldType::Load(argv[1]);
 	if (!field)
 	{
 		std::cerr << "Error loading field" << std::endl;
