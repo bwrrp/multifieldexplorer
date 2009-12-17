@@ -79,6 +79,8 @@ SET( ${ProjectName}_ModuleNames
 
 SET( ${ProjectName}_Data_Classes
 	Field
+	VectorFieldWithDerivatives
+
 	Vector3
 	Matrix3x3
 )

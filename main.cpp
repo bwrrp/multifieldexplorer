@@ -1,10 +1,14 @@
 #include "Data/Field.h"
+#include "Data/VectorFieldWithDerivatives.h"
 
 #include <cstdlib>
 #include <iostream>
 
 int main(int argc, char** argv)
 {
+	//typedef PropertySpace::Field FieldType;
+	typedef PropertySpace::VectorFieldWithDerivatives FieldType;
+
 	if (argc < 2)
 	{
 		std::cerr << "Specify field to load on the command line" << std::endl;
@@ -26,7 +30,7 @@ int main(int argc, char** argv)
 
 	// Load the field
 	std::cout << "Loading field..." << std::endl;
-	PropertySpace::Field *field = PropertySpace::Field::Load(argv[1]);
+	FieldType *field = FieldType::Load(argv[1]);
 	if (!field)
 	{
 		std::cerr << "Error loading field" << std::endl;

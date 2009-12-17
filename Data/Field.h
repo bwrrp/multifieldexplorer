@@ -14,6 +14,8 @@ namespace PropertySpace
 		static Field *Load(const std::string &filename);
 		virtual ~Field();
 
+		void Init(vtkImageData *volume);
+
 		void DoPCA();
 
 		void Transform();
@@ -32,9 +34,13 @@ namespace PropertySpace
 		itpp::mat eigVecs;
 		itpp::mat basis;
 
-		Field(vtkImageData *volume);
+		Field();
 
-		void BuildPropertyMatrix(vtkImageData *volume);
+		static vtkImageData *LoadVolume(const std::string &filename);
+
+		virtual void BuildPropertyMatrix(vtkImageData *volume);
+
+		void CenterData();
 
 		void SaveDataTransform(const std::string &filename, int comps);
 	};
