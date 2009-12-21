@@ -195,6 +195,42 @@
      </property>
     </widget>
    </item>
+   <item row="5" column="0">
+    <widget class="QLabel" name="stretchLabel">
+     <property name="text">
+      <string>Stretch:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="1">
+    <widget class="QSlider" name="stretch">
+     <property name="minimum">
+      <number>1</number>
+     </property>
+     <property name="maximum">
+      <number>1000</number>
+     </property>
+     <property name="pageStep">
+      <number>100</number>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="tickPosition">
+      <enum>QSlider::TicksBelow</enum>
+     </property>
+     <property name="tickInterval">
+      <number>100</number>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="4">
+    <widget class="QLabel" name="stretchReadout">
+     <property name="text">
+      <string>1.0</string>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <resources/>

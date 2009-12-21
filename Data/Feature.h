@@ -18,6 +18,7 @@ namespace MFE
 		float startThreshold;
 		float endThreshold;
 		float power;
+		float stretch;
 
 		// TODO: add more visualization style parameters
 		NQVTK::Vector3 color;

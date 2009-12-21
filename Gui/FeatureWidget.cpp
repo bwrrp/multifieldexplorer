@@ -44,6 +44,10 @@ namespace MFE
 					.arg(feature->examplePos.x)
 					.arg(feature->examplePos.y)
 					.arg(feature->examplePos.z));
+				ui.power->setValue(
+					0.5 + 100.0 * feature->power);
+				ui.stretch->setValue(
+					0.5 + 100.0 * feature->stretch);
 				UpdatePropertyWidgets();
 				setEnabled(true);
 			}
@@ -164,6 +168,18 @@ namespace MFE
 			float v = static_cast<float>(value) / 100.0;
 			feature->power = v;
 			ui.powerReadout->setText(QString("%1").arg(v, 0, 'f', 2));
+			if (feature->enabled) emit Updated();
+		}
+	}
+
+	// ------------------------------------------------------------------------
+	void FeatureWidget::on_stretch_valueChanged(int value)
+	{
+		if (feature)
+		{
+			float v = static_cast<float>(value) / 100.0;
+			feature->stretch = v;
+			ui.stretchReadout->setText(QString("%1").arg(v, 0, 'f', 2));
 			if (feature->enabled) emit Updated();
 		}
 	}
