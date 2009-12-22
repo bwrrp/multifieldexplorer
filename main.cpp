@@ -6,8 +6,8 @@
 
 int main(int argc, char** argv)
 {
-	typedef PropertySpace::Field FieldType;
-	//typedef PropertySpace::VectorFieldWithDerivatives FieldType;
+	//typedef PropertySpace::Field FieldType;
+	typedef PropertySpace::VectorFieldWithDerivatives FieldType;
 
 	if (argc < 2)
 	{
