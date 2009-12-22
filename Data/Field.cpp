@@ -253,11 +253,16 @@ namespace PropertySpace
 	// ------------------------------------------------------------------------
 	void Field::CenterData()
 	{
-		// Compute mean
+		// Compute mean and min/max for all properties
 		mean.set_size(data.cols());
+		min.set_size(data.cols());
+		max.set_size(data.cols());
 		for (int i = 0; i < data.cols(); ++i)
 		{
-			mean(i) = itpp::mean(data.get_col(i));
+			itpp::vec col = data.get_col(i);
+			min(i) = itpp::min(col);
+			max(i) = itpp::max(col);
+			mean(i) = itpp::mean(col);
 		}
 		// Center data
 		for (int i = 0; i < data.rows(); ++i)
@@ -292,14 +297,24 @@ namespace PropertySpace
 			{
 				for (int row = 0; row < transform.rows(); ++row)
 				{
-					double v = transform(row, col);
+					float v = static_cast<float>(transform(row, col));
 					transformFile.write((char*)&v, sizeof(v));
 				}
 			}
-			// Save mean (in original space)
+			// Save mean and min/max vectors (in original space)
 			for (int i = 0; i < mean.size(); ++i)
 			{
-				double v = mean(i);
+				float v = static_cast<float>(mean(i));
+				transformFile.write((char*)&v, sizeof(v));
+			}
+			for (int i = 0; i < min.size(); ++i)
+			{
+				float v = static_cast<float>(min(i));
+				transformFile.write((char*)&v, sizeof(v));
+			}
+			for (int i = 0; i < max.size(); ++i)
+			{
+				float v = static_cast<float>(max(i));
 				transformFile.write((char*)&v, sizeof(v));
 			}
 		}

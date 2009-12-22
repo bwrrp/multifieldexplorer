@@ -29,6 +29,8 @@ namespace PropertySpace
 
 		itpp::mat data;
 		itpp::vec mean;
+		itpp::vec min;
+		itpp::vec max;
 
 		itpp::vec eigVals;
 		itpp::mat eigVecs;
