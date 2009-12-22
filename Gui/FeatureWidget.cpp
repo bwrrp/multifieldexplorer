@@ -1,12 +1,11 @@
 #include "FeatureWidget.h"
 #include "FeatureWidget.moc"
 
+#include "Data/Field.h"
 #include "Data/Feature.h"
 
 #include <QGridLayout>
 #include <QLabel>
-
-#include "PropertySlider.h"
 
 namespace MFE
 {
@@ -14,8 +13,20 @@ namespace MFE
 	FeatureWidget::FeatureWidget(QWidget *parent) : QWidget(parent)
 	{
 		ui.setupUi(this);
-		CreatePropertyWidgets();
 		SetFeature(0);
+	}
+
+	// ------------------------------------------------------------------------
+	void FeatureWidget::SetField(Field *field)
+	{
+		// Unset the current feature
+		SetFeature(0);
+
+		// Create property labels for the new field
+		CreatePropertyWidgets(field);
+
+		// Pass to the feedback view to setup the property transform
+		ui.feedbackView->SetField(field);
 	}
 
 	// ------------------------------------------------------------------------
@@ -24,6 +35,8 @@ namespace MFE
 		if (this->feature == feature) return;
 
 		this->feature = feature;
+		ui.feedbackView->SetFeature(feature);
+
 		UpdateView();
 	}
 
@@ -59,71 +72,15 @@ namespace MFE
 	}
 
 	// ------------------------------------------------------------------------
-	void FeatureWidget::CreatePropertyWidgets()
+	void FeatureWidget::CreatePropertyWidgets(Field *field)
 	{
-		/*
-		// Create a dummy feature to get the properties
-		Feature f;
-		// Get layout
-		QGridLayout *layout = dynamic_cast<QGridLayout*>(
-			ui.propertiesGroup->layout());
-		ui.propertyPlaceholder->hide();
-		// Make widgets for the mask
-		FeatureVector &fv = f.mask;
-		int row = 0;
-		int valueIndex = 0;
-		for (std::vector<Property>::const_iterator it = fv.properties.begin();
-			it != fv.properties.end(); ++it)
-		{
-			int size = it->GetSize();
-
-			// Create widgets
-			QString name(it->name.c_str());
-			name[0] = name[0].toTitleCase();
-			QLabel *label = new QLabel(name + ":", ui.propertiesGroup);
-			layout->addWidget(label, row, 0);
-
-			PropertySlider *slider = new PropertySlider(
-				valueIndex, size, this);
-			slider->setRange(0, 100);
-			slider->setValue(0);
-			QSizePolicy pol(QSizePolicy::Expanding, QSizePolicy::Fixed);
-			pol.setHorizontalStretch(1);
-			slider->setSizePolicy(pol);
-			layout->addWidget(slider, row, 1);
-			propertySliders.push_back(slider);
-
-			QLabel *readout = new QLabel("0.00", this);
-			layout->addWidget(readout, row, 2);
-
-			// Connect signals
-			connect(slider, SIGNAL(ValueChanged(float, int)), 
-				this, SLOT(PropertyValueChanged(float, int)));
-			connect(slider, SIGNAL(ValueTextChanged(QString)), 
-				readout, SLOT(setText(QString)));
-
-			valueIndex += size;
-			++row;
-		}
-		*/
+		// TODO: create labels for the properties underneath the feedback view
 	}
 
 	// ------------------------------------------------------------------------
 	void FeatureWidget::UpdatePropertyWidgets()
 	{
-		/*
-		if (!feature) return;
-		FeatureVector &fv = feature->mask;
-
-		int valueIndex = 0;
-		for (unsigned int i = 0; i < propertySliders.size(); ++i)
-		{
-			PropertySlider *slider = propertySliders[i];
-			int size = fv.properties[i].GetSize();
-			slider->setValue(0.5 + 100.0 * fv.values[valueIndex]);
-			valueIndex += size;
-		}
-		*/
+		ui.feedbackView->updateGL();
 	}
 
 	// ------------------------------------------------------------------------
@@ -182,20 +139,5 @@ namespace MFE
 			ui.stretchReadout->setText(QString("%1").arg(v, 0, 'f', 2));
 			if (feature->enabled) emit Updated();
 		}
-	}
-
-	// ------------------------------------------------------------------------
-	void FeatureWidget::PropertyValueChanged(float value, int index)
-	{
-		if (!feature) return;
-
-		/*
-		FeatureVector &fv = feature->mask;
-		if (fv.values[index] != value)
-		{
-			fv.values[index] = value;
-			if (feature->enabled) emit Updated();
-		}
-		*/
 	}
 }

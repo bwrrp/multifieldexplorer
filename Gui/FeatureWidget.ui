@@ -33,12 +33,12 @@
        <number>0</number>
       </property>
       <item row="0" column="0">
-       <widget class="QLabel" name="propertyPlaceholder">
-        <property name="text">
-         <string>(no properties defined)</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
+       <widget class="MFE::FeedbackViewer" name="feedbackView" native="true">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>20</height>
+         </size>
         </property>
        </widget>
       </item>
@@ -233,6 +233,14 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>MFE::FeedbackViewer</class>
+   <extends>QWidget</extends>
+   <header>FeedbackViewer.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

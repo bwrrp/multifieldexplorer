@@ -76,7 +76,7 @@ SET( ${ProjectName}_Gui_Classes
 	RenderControls
 	FeatureList
 	FeatureWidget
-	PropertySlider
+	FeedbackViewer
 
 	SelectionSliceViewInteractor
 )
@@ -89,6 +89,7 @@ SET( ${ProjectName}_Data_Classes
 SET( ${ProjectName}_Rendering_Classes
 	SimiBlobStyle
 	SliceRenderer
+	FeedbackRenderer
 )
 
 # --------------------------------------------------

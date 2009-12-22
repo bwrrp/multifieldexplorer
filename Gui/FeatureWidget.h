@@ -8,8 +8,8 @@ class QLabel;
 
 namespace MFE
 {
+	class Field;
 	class Feature;
-	class PropertySlider;
 
 	class FeatureWidget : public QWidget
 	{
@@ -19,6 +19,7 @@ namespace MFE
 		FeatureWidget(QWidget *parent = 0);
 
 	public slots:
+		void SetField(Field *field);
 		void SetFeature(Feature *feature);
 		void UpdateView(Feature *updatedFeature = 0);
 
@@ -28,9 +29,8 @@ namespace MFE
 	protected:
 		Ui::FeatureWidget ui;
 		Feature *feature;
-		std::vector<PropertySlider*> propertySliders;
 
-		void CreatePropertyWidgets();
+		void CreatePropertyWidgets(Field *field);
 		void UpdatePropertyWidgets();
 
 	private slots:
@@ -39,6 +39,5 @@ namespace MFE
 		void on_endThreshold_valueChanged(int value);
 		void on_power_valueChanged(int value);
 		void on_stretch_valueChanged(int value);
-		void PropertyValueChanged(float value, int index);
 	};
 }
