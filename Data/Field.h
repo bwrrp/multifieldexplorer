@@ -2,6 +2,7 @@
 
 #include <itpp/itbase.h>
 
+#include <fstream>
 #include <string>
 
 class vtkImageData;
@@ -44,6 +45,7 @@ namespace PropertySpace
 
 		void CenterData();
 
-		void SaveDataTransform(const std::string &filename, int comps);
+		void SaveDataTransform(const std::string &filename, int comps, 
+			std::ofstream &descFile);
 	};
 }

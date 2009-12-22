@@ -144,8 +144,12 @@ namespace PropertySpace
 		if (comps > data.cols()) comps = data.cols();
 		std::cout << "Saving " << comps << " components..." << std::endl;
 
+		// Create a description file for the field
+		std::ofstream descFile((filename + ".field").c_str(), 
+			std::ios::out | std::ios::trunc);
+
 		// Save transform
-		SaveDataTransform(filename, comps);
+		SaveDataTransform(filename, comps, descFile);
 
 		// Prepare volume
 		std::cout << "Preparing to save fields..." << std::endl;
@@ -191,6 +195,9 @@ namespace PropertySpace
 			writer->SetFileName(file.str().c_str());
 			writer->SetInput(volume);
 			writer->Write();
+
+			// Append reference to the desc file
+			if (descFile.is_open()) descFile << "F " << file.str() << "\n";
 
 			// Next file / set of components
 			startComp += 4;
@@ -272,7 +279,8 @@ namespace PropertySpace
 	}
 
 	// ------------------------------------------------------------------------
-	void Field::SaveDataTransform(const std::string &filename, int comps)
+	void Field::SaveDataTransform(const std::string &filename, int comps, 
+		std::ofstream &descFile)
 	{
 		// Save transformation matrix
 		std::cout << "Saving transform..." << std::endl;
@@ -318,5 +326,8 @@ namespace PropertySpace
 				transformFile.write((char*)&v, sizeof(v));
 			}
 		}
+
+		// Append reference to the desc file
+		if (descFile.is_open()) descFile << "T " << fullFileName.str() << "\n";
 	}
 }
