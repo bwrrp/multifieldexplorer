@@ -197,7 +197,7 @@ namespace PropertySpace
 			writer->Write();
 
 			// Append reference to the desc file
-			if (descFile.is_open()) descFile << "F " << file.str() << "\n";
+			if (descFile.is_open()) descFile << file.str() << "\n";
 
 			// Next file / set of components
 			startComp += 4;
@@ -328,6 +328,6 @@ namespace PropertySpace
 		}
 
 		// Append reference to the desc file
-		if (descFile.is_open()) descFile << "T " << fullFileName.str() << "\n";
+		if (descFile.is_open()) descFile << fullFileName.str() << "\n";
 	}
 }
