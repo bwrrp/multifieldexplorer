@@ -226,11 +226,11 @@ void main()
 
 		float l = 0.0;
 		// Set this to a background point
-		FeatureVector noo = getFeatureVector(vec3(20.0, 10.0, 30.0));
+		FeatureVector noo = getFeatureVector(vec3(160.0, 160.0, 350.0));
 		for (int i = 0; i < MFE_PROPERTYCOUNT; ++i)
 		{
 			// Bias towards deviation from mean
-			features[0].weights.v[i] = features[0].example.v[i];
+			//features[0].weights.v[i] = features[0].example.v[i];
 			// Bias towards difference
 			features[0].weights.v[i] = features[0].example.v[i] - noo.v[i];
 			// Compute length
