@@ -134,7 +134,7 @@ namespace MFE
 		std::ifstream fieldFile(filename.toUtf8());
 		if (!fieldFile.is_open())
 		{
-			qDebug("Error opening file...");
+			qDebug("Error opening field file!");
 			return 0;
 		}
 
@@ -151,7 +151,7 @@ namespace MFE
 
 		if (!transform)
 		{
-			qDebug("Error loading transform...");
+			qDebug("Error loading transform!");
 			return 0;
 		}
 
@@ -172,7 +172,7 @@ namespace MFE
 			}
 			else
 			{
-				qDebug("Error loading component file...");
+				qDebug("Error loading component file!");
 			}
 		}
 
@@ -184,6 +184,7 @@ namespace MFE
 		}
 		else
 		{
+			qDebug("Number of field components does not match transform!");
 			delete field;
 			return 0;
 		}
