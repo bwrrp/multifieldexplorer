@@ -82,6 +82,7 @@ SET( ${ProjectName}_Gui_Classes
 )
 
 SET( ${ProjectName}_Data_Classes
+	DataTransform
 	Field
 	Feature
 )

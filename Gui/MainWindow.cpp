@@ -76,9 +76,7 @@ namespace MFE
 		// Show open dialog
 		QString filename = QFileDialog::getOpenFileName(
 			this, "Load field", QString(), 
-			"Volume data (*.vti *.mha *.mhd);;"
-			"VTK volumes (*.vti);;"
-			"MetaImage files (*.mha *.mhd)");
+			"Field description files (*.field)");
 		// This returns a null string when cancelled
 		if (!filename.isNull())
 		{

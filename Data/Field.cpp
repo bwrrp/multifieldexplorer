@@ -1,6 +1,8 @@
 #include "Field.h"
 #include "Field.moc"
 
+#include "DataTransform.h"
+
 #include <NQVTK/ParamSets/VolumeParamSet.h>
 
 #include <NQVTK/Rendering/Scene.h>
@@ -18,9 +20,13 @@
 #include <vtkTriangleFilter.h>
 #include <vtkXMLImageDataReader.h>
 
+#include <QDir>
 #include <QFileInfo>
 
+#include <cassert>
 #include <cmath>
+#include <fstream>
+#include <string>
 
 namespace MFE
 {
@@ -60,7 +66,7 @@ namespace MFE
 		if (!ok) 
 		{
 			qDebug("Not a volume!");
-			volume->Delete();
+			if (volume) volume->Delete();
 			volume = 0;
 		}
 
@@ -87,8 +93,13 @@ namespace MFE
 	}
 
 	// ------------------------------------------------------------------------
-	Field::Field(NQVTK::Scene *scene) : scene(scene)
+	Field::Field(DataTransform *transform) : transform(transform)
 	{
+		assert(transform != 0);
+		qDebug("Loading field: dim=%d (original %d)", 
+			transform->GetReducedDimension(), 
+			transform->GetOriginalDimension());
+
 		// Create a set of feature colors
 		// TODO: integrate this into the GUI at some point
 		featureColors.push_back(NQVTK::Vector3(1.0, 1.0, 1.0));
@@ -99,6 +110,11 @@ namespace MFE
 		featureColors.push_back(NQVTK::Vector3(0.5, 1.0, 0.0));
 		featureColors.push_back(NQVTK::Vector3(0.5, 0.0, 1.0));
 		featureColors.push_back(NQVTK::Vector3(1.0, 1.0, 1.0));
+
+		// Set up scene
+		scene = new NQVTK::Scene();
+
+		numComponents = 0;
 
 		// Add Cursor feature
 		AddFeature();
@@ -113,43 +129,98 @@ namespace MFE
 	// ------------------------------------------------------------------------
 	Field *Field::Load(const QString &filename)
 	{
-		// TODO: load field description file, containing...
-		//        - references to field component files
-		//        - a reference to the transform basis / mean file
-		//        - a (reference to a?) list of property names (for GUI)
+		// TODO: add some way to specify property names in the field file
 
-		// TODO: load each component file
-		// TODO: determine number of components, set up shaders
-		// TODO: load transform, check number of components
-		// TODO: setup property widgets
-
-		// Load the field
-		vtkImageData *vtkvolume = LoadVolume(filename);
-		if (!vtkvolume)
+		std::ifstream fieldFile(filename.toUtf8());
+		if (!fieldFile.is_open())
 		{
-			// Returns null when errors occur
+			qDebug("Error opening file...");
 			return 0;
 		}
 
-		// Create bounding geometry
-		vtkPolyData *vtkbb = CreateBoundingBox(vtkvolume);
+		// Filenames in the field file are relative to the file's location
+		QFileInfo fi(filename);
+		QDir::setCurrent(fi.absolutePath());
 
-		// Assemble NQVTK scene
-		NQVTK::Scene *scene = new NQVTK::Scene();
-		NQVTK::Renderable *bb = new NQVTK::PolyData(vtkbb);
-		NQVTK::Volume *volume = NQVTK::ImageDataVolume::New(vtkvolume);
+		// The first line is the transform
+		std::string transformFileName;
+		getline(fieldFile, transformFileName);
+
+		// Load the transform
+		DataTransform *transform = DataTransform::Load(transformFileName);
+
+		if (!transform)
+		{
+			qDebug("Error loading transform...");
+			return 0;
+		}
+
+		// Create the field
+		Field *field = new Field(transform);
+
+		// Continue parsing the field file to find the component files
+		while (fieldFile.good())
+		{
+			std::string componentFileName;
+			getline(fieldFile, componentFileName);
+			if (componentFileName == "") continue;
+			vtkImageData *vtkVolume = LoadVolume(componentFileName.c_str());
+			if (vtkVolume)
+			{
+				field->AddComponentVolume(vtkVolume);
+				vtkVolume->Delete();
+			}
+			else
+			{
+				qDebug("Error loading component file...");
+			}
+		}
+
+		// Field complete?
+		// TODO: check number of components
+		if (field->IsOk())
+		{
+			return field;
+		}
+		else
+		{
+			delete field;
+			return 0;
+		}
+	}
+
+	// ------------------------------------------------------------------------
+	void Field::AddComponentVolume(vtkImageData *vtkVolume)
+	{
+		assert(vtkVolume != 0);
+
+		// Create bounding geometry
+		vtkPolyData *vtkBB = CreateBoundingBox(vtkVolume);
+
+		// Add to scene
+		// TODO: all volumes should share the same bounding box
+		NQVTK::Renderable *bb = new NQVTK::PolyData(vtkBB);
+		NQVTK::Volume *volume = NQVTK::ImageDataVolume::New(vtkVolume);
 		bb->SetParamSet("volume", new NQVTK::VolumeParamSet(volume));
 		bb->opacity = 0.1;
 		scene->AddRenderable(bb);
 
 		// Delete VTK data
-		vtkvolume->Delete();
-		vtkbb->Delete();
+		vtkBB->Delete();
 
-		// Create the Field instance
-		Field *vf = new Field(scene);
+		numComponents += vtkVolume->GetNumberOfScalarComponents();
+	}
 
-		return vf;
+	// ------------------------------------------------------------------------
+	bool Field::IsOk()
+	{
+		return numComponents == transform->GetReducedDimension();
+	}
+
+	// ------------------------------------------------------------------------
+	GLTexture *Field::GetTransformTexture()
+	{
+		return transform->GetTexture();
 	}
 
 	// ------------------------------------------------------------------------

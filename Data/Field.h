@@ -9,6 +9,9 @@
 #include "Feature.h"
 
 class GLProgram;
+class GLTexture;
+
+class vtkImageData;
 
 namespace NQVTK
 {
@@ -17,6 +20,8 @@ namespace NQVTK
 
 namespace MFE
 {
+	class DataTransform;
+
 	class Field : public QObject
 	{
 		Q_OBJECT;
@@ -25,6 +30,11 @@ namespace MFE
 		static Field *Load(const QString &filename);
 
 		virtual ~Field();
+
+		void AddComponentVolume(vtkImageData *vtkVolume);
+		bool IsOk();
+
+		GLTexture *GetTransformTexture();
 
 		NQVTK::Scene *GetScene() { return scene; }
 
@@ -41,9 +51,12 @@ namespace MFE
 		void FeatureUpdated(int num);
 
 	protected:
-		Field(NQVTK::Scene *scene);
+		Field(DataTransform *transform);
 
+		DataTransform *transform;
 		NQVTK::Scene *scene;
+		int numComponents;
+
 		std::vector<Feature> features;
 		std::vector<NQVTK::Vector3> featureColors;
 	};
