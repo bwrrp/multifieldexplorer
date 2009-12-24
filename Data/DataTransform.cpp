@@ -53,7 +53,7 @@ namespace MFE
 	{
 		// Create a texture from the data
 		return GLTextureRectangle::New(
-			dimOriginal, dimReduced + 3, GL_LUMINANCE16F_ARB, 
+			dimOriginal, dimReduced + 3, GL_LUMINANCE32F_ARB, 
 			GL_LUMINANCE, GL_FLOAT, (void*)&data[0]);
 	}
 }

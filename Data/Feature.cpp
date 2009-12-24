@@ -24,7 +24,14 @@ namespace MFE
 	{
 		// Get the name of this feature
 		std::ostringstream feature;
-		feature << "userFeatures[" << index << "].";
+		if (index < 0)
+		{
+			feature << "userFeature.";
+		}
+		else
+		{
+			feature << "userFeatures[" << index << "].";
+		}
 		program->SetUniform1i(feature.str() + "enabled", enabled ? 1 : 0);
 		program->SetUniform3f(feature.str() + "examplePos", 
 			static_cast<float>(examplePos.x), 

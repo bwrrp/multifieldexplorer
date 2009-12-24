@@ -225,6 +225,18 @@ namespace MFE
 	}
 
 	// ------------------------------------------------------------------------
+	int Field::GetOriginalDimension()
+	{
+		return transform->GetOriginalDimension();
+	}
+
+	// ------------------------------------------------------------------------
+	int Field::GetReducedDimension()
+	{
+		return transform->GetReducedDimension();
+	}
+
+	// ------------------------------------------------------------------------
 	int Field::GetNumberOfFeatures() const
 	{
 		return features.size();

@@ -2,6 +2,8 @@
 
 #include <NQVTK/Rendering/Renderer.h>
 
+class GLProgram;
+
 namespace MFE
 {
 	class Field;
@@ -24,5 +26,10 @@ namespace MFE
 		virtual bool Initialize();
 
 		Feature *currentFeature;
+
+		GLProgram *shader;
+
+		int dimOriginal;
+		int dimReduced;
 	};
 }

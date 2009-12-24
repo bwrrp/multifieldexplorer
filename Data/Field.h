@@ -35,6 +35,8 @@ namespace MFE
 		bool IsOk();
 
 		GLTexture *GetTransformTexture();
+		int GetOriginalDimension();
+		int GetReducedDimension();
 
 		NQVTK::Scene *GetScene() { return scene; }
 

@@ -57,6 +57,7 @@ namespace MFE
 			ui.mainViewer->SetField(field);
 			ui.sliceViewer->SetField(field);
 			ui.featureList->SetField(field);
+			ui.featureEditor->SetField(field);
 			RedrawViewers();
 
 			delete oldField;
@@ -68,6 +69,7 @@ namespace MFE
 	{
 		ui.mainViewer->updateGL();
 		ui.sliceViewer->updateGL();
+		ui.featureEditor->RedrawFeedbackViewer();
 	}
 
 	// ------------------------------------------------------------------------
@@ -101,6 +103,7 @@ namespace MFE
 	{
 		ui.mainViewer->Initialize();
 		ui.sliceViewer->Initialize();
+		ui.featureEditor->InitializeFeedbackViewer();
 		RedrawViewers();
 	}
 

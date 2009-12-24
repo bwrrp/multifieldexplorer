@@ -1,0 +1,73 @@
+#define MFE_PROPERTYCOUNT 4
+
+uniform int viewportWidth;
+
+uniform int dimOriginal;
+uniform int dimReduced;
+
+uniform sampler2DRect transform;
+
+uniform sampler3D volume;
+uniform vec3 volumeOrigin;
+uniform vec3 volumeSize;
+uniform float volumeDataShift;
+uniform float volumeDataScale;
+
+struct FeatureVector
+{
+	float v[MFE_PROPERTYCOUNT];
+};
+
+struct Feature
+{
+	bool enabled;
+	vec3 examplePos;
+	FeatureVector example;
+	FeatureVector weights;
+	float startThreshold;
+	float endThreshold;
+	float power;
+	float stretch;
+	vec3 color;
+};
+
+uniform Feature userFeature;
+
+FeatureVector getFeatureVector(vec3 pos)
+{
+	FeatureVector result;
+
+	vec4 tpos = vec4(pos, 1.0);
+	vec3 p = ((tpos.xyz / tpos.w) - volumeOrigin) / volumeSize;
+	vec4 comps = vec4(volumeDataShift) + volumeDataScale * texture3D(volume, p);
+	for (int i = 0; i < 4; ++i)
+	{
+		result.v[i] = comps[i];
+	}
+
+	return result;
+}
+
+void main()
+{
+	vec2 coord = gl_FragCoord.xy;
+	float x = floor(coord.x * float(dimOriginal) / float(viewportWidth));
+
+	FeatureVector fv = getFeatureVector(userFeature.examplePos);
+	// Project the featurevector to the original space
+	float v = 0.0;
+	for (int i = 0; i < dimReduced; ++i)
+	{
+		v += fv.v[i] * texture2DRect(transform, vec2(x, float(i))).x;
+	}
+	// Add the mean
+	float mean = texture2DRect(transform, vec2(x, float(dimReduced))).x;
+	v += mean;
+
+	float min = texture2DRect(transform, vec2(x, float(dimReduced + 1))).x;
+	float max = texture2DRect(transform, vec2(x, float(dimReduced + 2))).x;
+
+	v = (v - min) / (max - min);
+
+	gl_FragColor = vec4(mix(vec3(0.0, 0.5, 1.0), vec3(1.0, 0.5, 0.0), v), 1.0);
+}

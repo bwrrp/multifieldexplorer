@@ -22,6 +22,8 @@ namespace MFE
 		void SetField(Field *field);
 		void SetFeature(Feature *feature);
 		void UpdateView(Feature *updatedFeature = 0);
+		void InitializeFeedbackViewer();
+		void RedrawFeedbackViewer();
 
 	signals:
 		void Updated();

@@ -72,6 +72,18 @@ namespace MFE
 	}
 
 	// ------------------------------------------------------------------------
+	void FeatureWidget::InitializeFeedbackViewer()
+	{
+		ui.feedbackView->Initialize();
+	}
+
+	// ------------------------------------------------------------------------
+	void FeatureWidget::RedrawFeedbackViewer()
+	{
+		ui.feedbackView->updateGL();
+	}
+
+	// ------------------------------------------------------------------------
 	void FeatureWidget::CreatePropertyWidgets(Field *field)
 	{
 		// TODO: create labels for the properties underneath the feedback view
