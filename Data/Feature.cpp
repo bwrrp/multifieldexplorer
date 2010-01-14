@@ -15,6 +15,8 @@ namespace MFE
 		power = 2.0;
 		stretch = 1.0;
 
+		biasRelativeToMean = true;
+
 		// Default color is white
 		color = NQVTK::Vector3(1.0);
 	}
@@ -37,19 +39,24 @@ namespace MFE
 			static_cast<float>(examplePos.x), 
 			static_cast<float>(examplePos.y), 
 			static_cast<float>(examplePos.z));
-		// Setup weights
-		for (unsigned int i = 0; i < weights.size(); ++i)
-		{
-			std::ostringstream wname;
-			wname << feature.str() << "weights.v[" << i << "]";
-			program->SetUniform1f(wname.str(), weights[i]);
-		}
-		// Setup other parameters
 		program->SetUniform1f(feature.str() + "startThreshold", 
 			startThreshold);
 		program->SetUniform1f(feature.str() + "endThreshold", endThreshold);
 		program->SetUniform1f(feature.str() + "power", power);
 		program->SetUniform1f(feature.str() + "stretch", stretch);
+		program->SetUniform3f(feature.str() + "backgroundPos", 
+			static_cast<float>(examplePos.x), 
+			static_cast<float>(examplePos.y), 
+			static_cast<float>(examplePos.z));
+		program->SetUniform1i(feature.str() + "biasRelativeToMean", 
+			biasRelativeToMean ? 1 : 0);
+		// Setup mask
+		for (unsigned int i = 0; i < mask.size(); ++i)
+		{
+			std::ostringstream mname;
+			mname << feature.str() << "mask.v[" << i << "]";
+			program->SetUniform1i(mname.str(), mask[i] ? 1 : 0);
+		}
 
 		program->SetUniform3f(feature.str() + "color", 
 			static_cast<float>(color.x), 

@@ -14,11 +14,13 @@ namespace MFE
 	public:
 		bool enabled;
 		NQVTK::Vector3 examplePos;
-		std::vector<float> weights;
 		float startThreshold;
 		float endThreshold;
 		float power;
 		float stretch;
+		std::vector<bool> mask;
+		NQVTK::Vector3 backgroundPos;
+		bool biasRelativeToMean;
 
 		// TODO: add more visualization style parameters
 		NQVTK::Vector3 color;
