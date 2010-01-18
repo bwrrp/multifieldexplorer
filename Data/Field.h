@@ -34,7 +34,6 @@ namespace MFE
 		void AddComponentVolume(vtkImageData *vtkVolume);
 		bool IsOk();
 
-		GLTexture *GetTransformTexture();
 		int GetOriginalDimension();
 		int GetReducedDimension();
 
@@ -45,7 +44,7 @@ namespace MFE
 		void AddFeature();
 		void RemoveFeature(int i);
 
-		void SetupFeatures(GLProgram *program) const;
+		void SetupProgram(GLProgram *program) const;
 
 		void EmitFeatureUpdated(int num);
 

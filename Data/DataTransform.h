@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-class GLTexture;
+class GLProgram;
 
 namespace MFE
 {
@@ -17,7 +17,7 @@ namespace MFE
 		int GetOriginalDimension() { return dimOriginal; }
 		int GetReducedDimension() { return dimReduced; }
 
-		GLTexture *GetTexture();
+		void SetupProgram(GLProgram *program);
 
 	protected:
 		DataTransform(int dimOriginal, int dimReduced, 

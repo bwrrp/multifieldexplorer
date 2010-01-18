@@ -80,7 +80,7 @@ namespace MFE
 		// Prepare the shader uniforms
 		// TODO: extend the RenderStyle mechanism to include normal Renderers
 		shader->Start();
-		if (field) field->SetupFeatures(shader);
+		if (field) field->SetupProgram(shader);
 		shader->SetUniform1f("kernelSize", kernelSize * unitSize);
 		shader->Stop();
 

@@ -1,6 +1,6 @@
 #include "DataTransform.h"
 
-#include <GLBlaat/GLTextureRectangle.h>
+#include <GLBlaat/GLProgram.h>
 
 #include <fstream>
 
@@ -49,11 +49,10 @@ namespace MFE
 	}
 
 	// ------------------------------------------------------------------------
-	GLTexture *DataTransform::GetTexture()
+	void DataTransform::SetupProgram(GLProgram *program)
 	{
-		// Create a texture from the data
-		return GLTextureRectangle::New(
-			dimOriginal, dimReduced + 3, GL_LUMINANCE32F_ARB, 
-			GL_LUMINANCE, GL_FLOAT, (void*)&data[0]);
+		// TODO: find a way to setup the transform size #defines
+		// Setup transform data
+		program->SetUniform1fv("transform", data.size(), &data[0]);
 	}
 }

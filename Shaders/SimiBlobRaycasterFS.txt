@@ -13,8 +13,6 @@ uniform sampler2DRect info0Current;
 uniform sampler2DRect info1Current;
 uniform sampler2DRect info2Current;
 
-uniform sampler2DRect transform;
-
 uniform int layer;
 uniform float viewportX;
 uniform float viewportY;
@@ -92,21 +90,6 @@ FeatureVector getFeatureVector(vec3 pos)
 		}
 	}
 
-	return result;
-}
-
-Transform getPropertyTransform()
-{
-	// Sample the transform texture and build the transform
-	Transform result;
-	for (int i = 0; i < MFE_PROPERTYCOUNT; ++i)
-	{
-		for (int j = 0; i < MFE_ORIGINALPROPERTYCOUNT; ++i)
-		{
-			result.v[j + i * MFE_ORIGINALPROPERTYCOUNT] = 
-				texture2DRect(transform, vec2(float(j), float(i))).x;
-		}
-	}
 	return result;
 }
 
@@ -267,7 +250,8 @@ void main()
 		int numSteps = int(ceil(length(ray) / stepSize));
 
 		// Read the transform from texture
-		Transform t = getPropertyTransform();
+		// TODO: use an uniform instead?
+		Transform t;
 
 		Feature features[MFE_FEATURECOUNT];
 		for (int f = 0; f < MFE_FEATURECOUNT; ++f)

@@ -88,7 +88,7 @@ namespace MFE
 	{
 		Superclass::UpdatePainterParameters(painter);
 
-		if (field) field->SetupFeatures(painter);
+		if (field) field->SetupProgram(painter);
 	}
 
 	// ------------------------------------------------------------------------

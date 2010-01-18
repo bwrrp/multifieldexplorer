@@ -219,12 +219,6 @@ namespace MFE
 	}
 
 	// ------------------------------------------------------------------------
-	GLTexture *Field::GetTransformTexture()
-	{
-		return transform->GetTexture();
-	}
-
-	// ------------------------------------------------------------------------
 	int Field::GetOriginalDimension()
 	{
 		return transform->GetOriginalDimension();
@@ -267,7 +261,7 @@ namespace MFE
 	}
 
 	// ------------------------------------------------------------------------
-	void Field::SetupFeatures(GLProgram *program) const
+	void Field::SetupProgram(GLProgram *program) const
 	{
 		int numFeatures = GetNumberOfFeatures();
 		program->SetUniform1i("numActiveFeatures", numFeatures);
@@ -275,6 +269,7 @@ namespace MFE
 		{
 			features[i].SetupProgram(program, i);
 		}
+		transform->SetupProgram(program);
 	}
 
 	// ------------------------------------------------------------------------

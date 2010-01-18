@@ -58,7 +58,9 @@ namespace MFE
 			ui.sliceViewer->SetField(field);
 			ui.featureList->SetField(field);
 			ui.featureEditor->SetField(field);
-			RedrawViewers();
+
+			// Shaders need to be rebuilt for the new field
+			on_actionReloadShaders_triggered();
 
 			delete oldField;
 		}

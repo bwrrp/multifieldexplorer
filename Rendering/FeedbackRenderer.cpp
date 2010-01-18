@@ -123,8 +123,6 @@ namespace MFE
 			dimReduced = field->GetReducedDimension();
 
 			SetScene(field->GetScene());
-
-			tm->AddTexture("transform", field->GetTransformTexture());
 		}
 		else
 		{
