@@ -135,6 +135,9 @@ namespace MFE
 	{
 		if (!field) return;
 
+		// Reset selection
+		emit FeatureSelected(0);
+
 		ui.featureList->addItem("");
 		field->AddFeature();
 		field->EmitFeatureUpdated(field->GetNumberOfFeatures() - 1);

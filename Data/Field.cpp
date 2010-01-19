@@ -251,6 +251,8 @@ namespace MFE
 		unsigned int i = features.size() - 1;
 		features[i].color = 
 			featureColors[std::min(i, featureColors.size() - 1)];
+		// Set initial mask to enable all properties
+		features[i].mask.resize(GetOriginalDimension(), true);
 	}
 
 	// ------------------------------------------------------------------------
