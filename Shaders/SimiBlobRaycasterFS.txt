@@ -86,6 +86,8 @@ FeatureVector getFeatureVector(vec3 pos)
 
 FeatureVector project(FeatureVector x, Mask m)
 {
+	return x;
+	/*
 	// Project to original space
 	float x2[MFE_ORIGINALPROPERTYCOUNT];
 	for (int i = 0; i < MFE_ORIGINALPROPERTYCOUNT; ++i)
@@ -111,6 +113,7 @@ FeatureVector project(FeatureVector x, Mask m)
 		}
 	}
 	return result;
+	*/
 }
 
 FeatureVector stretch(FeatureVector x, FeatureVector v, float s)
