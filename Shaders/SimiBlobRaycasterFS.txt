@@ -251,45 +251,42 @@ void main()
 			}
 			else
 			{
-				features[f].defId = -1;
+				// Default to 0 to hopefully hit some cache
+				features[f].defId = 0;
 			}
+		}
 
-			// Example-based definition of the feature
-			if (features[f].defId >= 0)
+		// Example-based feature definitions
+		for (int f = 0; f < MFE_FEATURECOUNT; ++f)
+		{
+			// Compute example
+			features[f].example = 
+				getFeatureVector(userFeatures[f].examplePos);
+			// Compute background feature vector
+			FeatureVector bg = getFeatureVector(userFeatures[f].backgroundPos);
+			if (userFeatures[f].biasRelativeToMean)
 			{
-				// Compute example
-				features[f].example = 
-					getFeatureVector(userFeatures[f].examplePos);
-				// Compute background feature vector
-				FeatureVector bg;
-				if (userFeatures[f].biasRelativeToMean)
-				{
-					for (int i = 0; i < MFE_PROPERTYCOUNT; ++i)
-					{
-						bg.v[i] = 0.0;
-					}
-				}
-				else
-				{
-					bg = getFeatureVector(userFeatures[f].backgroundPos);
-				}
-				// Compute bias vector
-				float l = 0.0;
 				for (int i = 0; i < MFE_PROPERTYCOUNT; ++i)
 				{
-					// Bias towards difference
-					features[f].bias.v[i] = features[f].example.v[i] - bg.v[i];
-					// Compute length
-					l += features[f].bias.v[i] * features[f].bias.v[i];
+					bg.v[i] = 0.0;
 				}
-				l = sqrt(l);
-				features[f].delta = l;
-				// Normalize
-				l = 1.0 / l;
-				for (int i = 0; i < MFE_PROPERTYCOUNT; ++i)
-				{
-					features[f].bias.v[i] = features[f].bias.v[i] * l;
-				}
+			}
+			// Compute bias vector
+			float l = 0.0;
+			for (int i = 0; i < MFE_PROPERTYCOUNT; ++i)
+			{
+				// Bias towards difference
+				features[f].bias.v[i] = features[f].example.v[i] - bg.v[i];
+				// Compute length
+				l += features[f].bias.v[i] * features[f].bias.v[i];
+			}
+			l = sqrt(l);
+			features[f].delta = l;
+			// Normalize
+			l = 1.0 / l;
+			for (int i = 0; i < MFE_PROPERTYCOUNT; ++i)
+			{
+				features[f].bias.v[i] = features[f].bias.v[i] * l;
 			}
 		}
 
@@ -305,7 +302,8 @@ void main()
 		bool inVolume = getBit(infoBefore.a, 0);
 		for (int f = 0; f < MFE_FEATURECOUNT; ++f)
 		{
-			active[f] = features[f].defId >= 0 && inVolume;
+			active[f] = f < numActiveFeatures && 
+				userFeatures[f].enabled && inVolume;
 			insideAtStart[f] = getBit(infoBefore.a, f + fidbase);
 			hit[f] = false;
 			refined[f] = vec3(0.0);
