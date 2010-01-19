@@ -219,13 +219,13 @@ namespace MFE
 	}
 
 	// ------------------------------------------------------------------------
-	int Field::GetOriginalDimension()
+	int Field::GetOriginalDimension() const
 	{
 		return transform->GetOriginalDimension();
 	}
 
 	// ------------------------------------------------------------------------
-	int Field::GetReducedDimension()
+	int Field::GetReducedDimension() const
 	{
 		return transform->GetReducedDimension();
 	}

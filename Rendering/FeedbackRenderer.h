@@ -2,10 +2,13 @@
 
 #include <NQVTK/Rendering/Renderer.h>
 
+#include <string>
+
 class GLProgram;
 
 namespace MFE
 {
+	class DataTransform;
 	class Field;
 	class Feature;
 
@@ -25,11 +28,12 @@ namespace MFE
 	protected:
 		virtual bool Initialize();
 
+		std::string AddShaderDefines(const std::string &shader);
+
 		Feature *currentFeature;
 
 		GLProgram *shader;
 
-		int dimOriginal;
-		int dimReduced;
+		DataTransform *transform;
 	};
 }

@@ -2,6 +2,10 @@
 
 #include <NQVTK/Rendering/SliceRenderer.h>
 
+#include <string>
+
+class GLProgram;
+
 namespace MFE
 {
 	class Field;
@@ -27,5 +31,8 @@ namespace MFE
 		float unitSize;
 
 		virtual bool Initialize();
+
+		GLProgram *CreateSliceViewerShader();
+		std::string AddShaderDefines(const std::string &shader);
 	};
 }

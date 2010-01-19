@@ -5,9 +5,6 @@
 #extension GL_EXT_gpu_shader4 : enable
 #endif
 
-#define MFE_PROPERTYCOUNT 4
-#define MFE_ORIGINALPROPERTYCOUNT 6
-
 uniform sampler2DRect info0Previous;
 uniform sampler2DRect info0Current;
 uniform sampler2DRect info1Current;

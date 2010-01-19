@@ -34,10 +34,13 @@ namespace MFE
 		void AddComponentVolume(vtkImageData *vtkVolume);
 		bool IsOk();
 
-		int GetOriginalDimension();
-		int GetReducedDimension();
+		int GetOriginalDimension() const;
+		int GetReducedDimension() const;
+
+		DataTransform *GetTransform() { return transform; }
 
 		NQVTK::Scene *GetScene() { return scene; }
+		const NQVTK::Scene *GetScene() const { return scene; }
 
 		int GetNumberOfFeatures() const;
 		Feature *GetFeature(int i);

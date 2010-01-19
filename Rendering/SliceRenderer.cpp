@@ -48,26 +48,6 @@ namespace MFE
 	}
 
 	// ------------------------------------------------------------------------
-	static GLProgram *CreateSliceViewerShader()
-	{
-		GLProgram *shader = GLProgram::New();
-		if (!shader) return false;
-		bool ok = true;
-		if (ok) ok = shader->AddVertexShader(
-			LoadShader("SliceViewerVS.txt"));
-		// TODO: we need the actual object transform here
-		if (ok) ok = shader->AddFragmentShader(
-			LoadShader("SliceViewerFS.txt"));
-		if (ok) ok = shader->Link();
-		if (!ok) 
-		{
-			delete shader;
-			return 0;
-		}
-		return shader;
-	}
-
-	// ------------------------------------------------------------------------
 	SliceRenderer::SliceRenderer() : field(0)
 	{
 		unitSize = 1.0;
@@ -154,5 +134,46 @@ namespace MFE
 		delete oldShader;
 
 		return initialized;
+	}
+
+	// ------------------------------------------------------------------------
+	GLProgram *SliceRenderer::CreateSliceViewerShader()
+	{
+		GLProgram *shader = GLProgram::New();
+		if (!shader) return false;
+		bool ok = true;
+		if (ok) ok = shader->AddVertexShader(
+			AddShaderDefines(LoadShader("SliceViewerVS.txt")));
+		// TODO: we need the actual object transform here
+		if (ok) ok = shader->AddFragmentShader(
+			AddShaderDefines(LoadShader("SliceViewerFS.txt")));
+		if (ok) ok = shader->Link();
+		if (!ok) 
+		{
+			delete shader;
+			return 0;
+		}
+		return shader;
+	}
+
+	// ------------------------------------------------------------------------
+	std::string SliceRenderer::AddShaderDefines(const std::string &shader)
+	{
+		// TODO: replace this with some general system to manage shader options
+		std::ostringstream source;
+		// TODO: adjust this based on the actual number of features
+		source << "#define MFE_FEATURECOUNT 6\n";
+		int propCount = 4;
+		int origPropCount = 6;
+		if (field)
+		{
+			propCount = field->GetReducedDimension();
+			origPropCount = field->GetOriginalDimension();
+		}
+		source << "#define MFE_PROPERTYCOUNT " << propCount << "\n";
+		source << "#define MFE_ORIGINALPROPERTYCOUNT " << origPropCount 
+			<< "\n";
+		source << shader;
+		return source.str();
 	}
 }

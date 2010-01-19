@@ -49,6 +49,9 @@ namespace MFE
 		// TODO: adjust this based on the current number of features
 		SetOption("MFE_FEATURECOUNT", 6);
 		SetOption("NQVTK_BITMASK_BITS", 8);
+		// Adjust these when a new field is loaded
+		SetOption("MFE_PROPERTYCOUNT", 4);
+		SetOption("MFE_ORIGINALPROPERTYCOUNT", 6);
 	}
 
 	// ------------------------------------------------------------------------
@@ -95,5 +98,12 @@ namespace MFE
 	void SimiBlobStyle::SetField(const Field *field)
 	{
 		this->field = field;
+		if (field)
+		{
+			SetOption("MFE_PROPERTYCOUNT", 
+				field->GetReducedDimension());
+			SetOption("MFE_ORIGINALPROPERTYCOUNT", 
+				field->GetOriginalDimension());
+		}
 	}
 }

@@ -1,5 +1,6 @@
 #include "FeedbackRenderer.h"
 
+#include "Data/DataTransform.h"
 #include "Data/Field.h"
 #include "Data/Feature.h"
 
@@ -80,8 +81,8 @@ namespace MFE
 
 			shader->Start();
 			shader->SetUniform1i("viewportWidth", viewportWidth);
-			shader->SetUniform1i("dimOriginal", dimOriginal);
-			shader->SetUniform1i("dimReduced", dimReduced);
+
+			if(transform) transform->SetupProgram(shader);
 
 			// Assume the field is in the first renderable
 			// TODO: add support for more than 4 components
@@ -119,14 +120,14 @@ namespace MFE
 	{
 		if (field)
 		{
-			dimOriginal = field->GetOriginalDimension();
-			dimReduced = field->GetReducedDimension();
+			transform = field->GetTransform();
 
 			SetScene(field->GetScene());
 		}
 		else
 		{
 			SetScene(0);
+			transform = 0;
 		}
 
 		currentFeature = 0;
@@ -150,10 +151,10 @@ namespace MFE
 		shader = GLProgram::New();
 		if (!shader) return false;
 		bool ok = shader->AddVertexShader(
-			LoadShader("FeedbackVS.txt"));
+			AddShaderDefines(LoadShader("FeedbackVS.txt")));
 		// TODO: we need the actual object transform here
 		if (ok) ok = shader->AddFragmentShader(
-			LoadShader("FeedbackFS.txt"));
+			AddShaderDefines(LoadShader("FeedbackFS.txt")));
 		if (ok) ok = shader->Link();
 		if (!ok) 
 		{
@@ -163,5 +164,24 @@ namespace MFE
 		}
 
 		return true;
+	}
+
+	// ------------------------------------------------------------------------
+	std::string FeedbackRenderer::AddShaderDefines(const std::string &shader)
+	{
+		// TODO: replace this with some general system to manage shader options
+		std::ostringstream source;
+		int propCount = 4;
+		int origPropCount = 6;
+		if (transform)
+		{
+			propCount = transform->GetReducedDimension();
+			origPropCount = transform->GetOriginalDimension();
+		}
+		source << "#define MFE_PROPERTYCOUNT " << propCount << "\n";
+		source << "#define MFE_ORIGINALPROPERTYCOUNT " << origPropCount 
+			<< "\n";
+		source << shader;
+		return source.str();
 	}
 }
