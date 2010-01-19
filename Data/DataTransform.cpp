@@ -51,8 +51,13 @@ namespace MFE
 	// ------------------------------------------------------------------------
 	void DataTransform::SetupProgram(GLProgram *program)
 	{
-		// TODO: find a way to setup the transform size #defines
-		// Setup transform data
-		program->SetUniform1fv("transform", data.size(), &data[0]);
+		// Setup transform data uniforms
+		int n = dimReduced * dimOriginal;
+		program->SetUniform1fv("dataTransform", n, &data[0]);
+		program->SetUniform1fv("dataMean", dimOriginal, &data[n]);
+		n += dimOriginal;
+		program->SetUniform1fv("dataMin", dimOriginal, &data[n]);
+		n += dimOriginal;
+		program->SetUniform1fv("dataMax", dimOriginal, &data[n]);
 	}
 }

@@ -49,7 +49,8 @@ namespace MFE
 	}
 
 	// ------------------------------------------------------------------------
-	FeedbackRenderer::FeedbackRenderer() : currentFeature(0), shader(0)
+	FeedbackRenderer::FeedbackRenderer() 
+		: currentFeature(0), shader(0), transform(0)
 	{
 	}
 

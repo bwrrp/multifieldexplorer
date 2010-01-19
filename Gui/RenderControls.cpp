@@ -59,12 +59,5 @@ namespace MFE
 		ui.kernelSizeReadout->setText(QString("%1").arg(v, 0, 'f', 2));
 		style->kernelSize = v;		
 		mainViewer->updateGL();
-		SliceRenderer *renderer = dynamic_cast<SliceRenderer*>(
-			sliceViewer->GetRenderer());
-		if (renderer)
-		{
-			renderer->kernelSize = v;
-			sliceViewer->updateGL();
-		}
 	}
 }

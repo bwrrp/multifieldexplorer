@@ -23,12 +23,8 @@ namespace MFE
 
 		void SetField(Field *field);
 
-		float kernelSize;
-
 	protected:
 		Field *field;
-
-		float unitSize;
 
 		virtual bool Initialize();
 

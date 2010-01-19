@@ -50,8 +50,6 @@ namespace MFE
 	// ------------------------------------------------------------------------
 	SliceRenderer::SliceRenderer() : field(0)
 	{
-		unitSize = 1.0;
-		kernelSize = 1.0;
 	}
 
 	// ------------------------------------------------------------------------
@@ -59,10 +57,12 @@ namespace MFE
 	{
 		// Prepare the shader uniforms
 		// TODO: extend the RenderStyle mechanism to include normal Renderers
-		shader->Start();
-		if (field) field->SetupProgram(shader);
-		shader->SetUniform1f("kernelSize", kernelSize * unitSize);
-		shader->Stop();
+		if (field)
+		{
+			shader->Start();
+			field->SetupProgram(shader);
+			shader->Stop();
+		}
 
 		Superclass::Draw();
 	}
@@ -70,8 +70,8 @@ namespace MFE
 	// ------------------------------------------------------------------------
 	void SliceRenderer::SceneChanged()
 	{
-		// Compute unitSize
-		unitSize = 1000000.0;
+		// Make sure each renderable has a volume paramset
+		// TODO: simplify NQVTK mixed object / volume rendering?
 		for (unsigned int i = 0; i < view->GetNumberOfRenderables(); ++i)
 		{
 			NQVTK::Renderable *renderable = view->GetRenderable(i);
@@ -80,27 +80,7 @@ namespace MFE
 				NQVTK::VolumeParamSet *vps = 
 					dynamic_cast<NQVTK::VolumeParamSet*>(
 						renderable->GetParamSet("volume"));
-				if (vps)
-				{
-					NQVTK::Volume *volume = vps->GetVolume();
-					if (volume)
-					{
-						// Compute spacings
-						NQVTK::Vector3 size = 
-							volume->GetOriginalSize();
-						double spX = size.x / static_cast<double>(
-							volume->GetWidth() - 1);
-						double spY = size.y / static_cast<double>(
-							volume->GetHeight() - 1);
-						double spZ = size.z / static_cast<double>(
-							volume->GetDepth() - 1);
-						// Update unitSize if any are smaller
-						if (spX < unitSize) unitSize = spX;
-						if (spY < unitSize) unitSize = spY;
-						if (spZ < unitSize) unitSize = spZ;
-					}
-				}
-				else
+				if (!vps)
 				{
 					// Add an empty volume ParamSet
 					renderable->SetParamSet("volume", 
@@ -108,7 +88,6 @@ namespace MFE
 				}
 			}
 		}
-		assert(unitSize > 0.0);
 
 		Superclass::SceneChanged();
 	}

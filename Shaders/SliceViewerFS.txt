@@ -15,27 +15,41 @@ uniform float viewportX;
 uniform float viewportY;
 uniform int objectId;
 
-uniform float kernelSize;
-
 struct FeatureVector
 {
 	float v[MFE_PROPERTYCOUNT];
 };
 
-struct Feature
+struct Mask
+{
+	bool v[MFE_ORIGINALPROPERTYCOUNT];
+};
+
+struct FeatureDefinition
 {
 	bool enabled;
 	vec3 examplePos;
-	FeatureVector example;
-	FeatureVector weights;
 	float startThreshold;
 	float endThreshold;
 	float power;
+	float stretch;
 	vec3 color;
+	Mask mask;
+	vec3 backgroundPos;
+	bool biasRelativeToMean;
 };
 
-uniform Feature userFeatures[MFE_FEATURECOUNT];
+uniform float dataTransform[MFE_PROPERTYCOUNT * MFE_ORIGINALPROPERTYCOUNT];
+uniform FeatureDefinition userFeatures[MFE_FEATURECOUNT];
 uniform int numActiveFeatures;
+
+struct Feature
+{
+	int defId; // index into the userFeatures uniform
+	FeatureVector example;
+	FeatureVector bias;
+	float delta;
+};
 
 FeatureVector getFeatureVector(vec3 pos)
 {
@@ -53,21 +67,75 @@ FeatureVector getFeatureVector(vec3 pos)
 	return result;
 }
 
-float distance(FeatureVector a, FeatureVector b, 
-	FeatureVector weights, float power)
+FeatureVector project(FeatureVector x, Mask m)
+{
+	// Project to original space
+	float x2[MFE_ORIGINALPROPERTYCOUNT];
+	for (int i = 0; i < MFE_ORIGINALPROPERTYCOUNT; ++i)
+	{
+		x2[i] = 0.0;
+		// Only unmasked dimensions
+		if (m.v[i])
+		{
+			for (int j = 0; j < MFE_PROPERTYCOUNT; ++j)
+			{
+				x2[i] += x.v[j] * dataTransform[i + j * MFE_ORIGINALPROPERTYCOUNT];
+			}
+		}
+	}
+	// Project back to the reduced feature space
+	FeatureVector result;
+	for (int i = 0; i < MFE_PROPERTYCOUNT; ++i)
+	{
+		result.v[i] = 0.0;
+		for (int j = 0; j < MFE_ORIGINALPROPERTYCOUNT; ++j)
+		{
+			result.v[i] += x2[j] * dataTransform[j + i * MFE_ORIGINALPROPERTYCOUNT];
+		}
+	}
+	return result;
+}
+
+FeatureVector stretch(FeatureVector x, FeatureVector v, float s)
+{
+	// Volume-preserving scaling within the reduced feature space
+	float s2 = 1.0 / pow(s, 1.0 / float(MFE_PROPERTYCOUNT));
+	// Matrix-vector multiplication with the scaling matrix
+	FeatureVector result;
+	for (int i = 0; i < MFE_PROPERTYCOUNT; ++i)
+	{
+		result.v[i] = 0.0;
+		for (int j = 0; j < MFE_PROPERTYCOUNT; ++j)
+		{
+			float Mij = (s - 1.0) * v.v[i] * v.v[j];
+			if (i == j) Mij += 1.0;
+			result.v[i] += Mij * s2 * x.v[j];
+		}
+	}
+	return result;
+}
+
+float distance(FeatureVector a, FeatureVector b, float power)
 {
 	float sum = 0.0;
 	for (int i = 0; i < MFE_PROPERTYCOUNT; ++i)
 	{
-		sum += pow(weights.v[i] * abs(a.v[i] - b.v[i]), power);
+		sum += pow(abs(a.v[i] - b.v[i]), power);
 	}
 	return pow(sum, 1.0/power);
 }
 
 float getValue(Feature f, FeatureVector fv)
 {
+	// Feature vectors are projected, then stretched
+	FeatureVector fv1 = stretch(
+		project(f.example, userFeatures[f.defId].mask), 
+		f.bias, userFeatures[f.defId].stretch);
+	FeatureVector fv2 = stretch(
+		project(fv, userFeatures[f.defId].mask), 
+		f.bias, userFeatures[f.defId].stretch);
 	// Compute distance
-	return distance(fv, f.example, f.weights, f.power);
+	return distance(fv1, fv2, userFeatures[f.defId].power);
 }
 
 float getValue(Feature f, vec3 pos)
@@ -80,23 +148,14 @@ float getValue(Feature f, vec3 pos)
 
 bool isInside(Feature f, float val)
 {
-	return f.startThreshold <= f.endThreshold ? 
-		(val > f.startThreshold && val < f.endThreshold) :
-		(val < f.endThreshold || val > f.startThreshold);
+	// TODO: adjust threshold based on f.delta
+	return val < pow(10.0, userFeatures[f.defId].startThreshold) * 
+		userFeatures[f.defId].endThreshold;
 }
 
 float dotTexture(vec2 c)
 {
 	return length(mod(c, 20.0) - vec2(10.0)) < 5.0 ? 0.0 : 1.0;
-}
-
-vec3 getVector(FeatureVector fv)
-{
-	// TODO: use actual transformation to reconstruct the vector direction
-	return vec3(
-		5.0 + fv.v[0] * -0.608 + fv.v[1] * 1.283 + fv.v[2] * 0.015, 
-		fv.v[0] * -1.836 + fv.v[1] * -0.542 + fv.v[2] * 0.048, 
-		fv.v[0] * -0.217 + fv.v[1] * -0.061 + fv.v[2] * -0.006);
 }
 
 void main()
@@ -158,26 +217,25 @@ void main()
 	Feature features[MFE_FEATURECOUNT];
 	for (int f = 0; f < MFE_FEATURECOUNT; ++f)
 	{
-		// Copy feature definition
-		if (f < numActiveFeatures)
+		// Link to feature definition
+		if (f < numActiveFeatures && userFeatures[f].enabled)
 		{
-			features[f] = userFeatures[f];
+			features[f].defId = f;
 		}
 		else
 		{
-			features[f].enabled = false;
+			features[f].defId = -1;
 		}
-
 		// Compute examples
-		if (features[f].enabled)
+		if (features[f].defId >= 0)
 		{
 			features[f].example = 
-				getFeatureVector(features[f].examplePos);
+				getFeatureVector(userFeatures[f].examplePos);
 			
 			float value = getValue(features[f], fv);
 			if (isInside(features[f], value))
 			{
-				color.rgb = mix(color.rgb, features[f].color, 0.7);
+				color.rgb = mix(color.rgb, userFeatures[f].color, 0.7);
 				// TODO: contours might be nice
 			}
 		}

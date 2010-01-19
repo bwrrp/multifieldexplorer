@@ -48,21 +48,17 @@ struct FeatureDefinition
 	bool biasRelativeToMean;
 };
 
+uniform float dataTransform[MFE_PROPERTYCOUNT * MFE_ORIGINALPROPERTYCOUNT];
+uniform FeatureDefinition userFeatures[MFE_FEATURECOUNT];
+uniform int numActiveFeatures;
+
 struct Feature
 {
-	FeatureDefinition definition;
+	int defId; // index into the userFeatures uniform
 	FeatureVector example;
 	FeatureVector bias;
 	float delta;
 };
-
-struct Transform
-{
-	float v[MFE_PROPERTYCOUNT * MFE_ORIGINALPROPERTYCOUNT];
-};
-
-uniform FeatureDefinition userFeatures[MFE_FEATURECOUNT];
-uniform int numActiveFeatures;
 
 // Prototypes from LibUtility
 vec3 phongShading(vec3 matColor, vec3 normal);
@@ -74,23 +70,21 @@ FeatureVector getFeatureVector(vec3 pos)
 	FeatureVector result;
 
 	const int numVolumes = (MFE_PROPERTYCOUNT + 3) / 4;
-	for (int v = 0; v < numVolumes; ++v)
+	// Only a single volume is supported for now...
+	int v = 0;
+	vec4 tpos = gl_TextureMatrixInverse[v] * vec4(pos, 1.0);
+	vec3 p = ((tpos.xyz / tpos.w) - volumeOrigin[v]) / volumeSize[v];
+	vec4 comps = vec4(volumeDataShift[v]) + 
+		volumeDataScale[v] * texture3D(volume[v], p);
+	for (int i = 0; i < 4; ++i)
 	{
-		vec4 tpos = gl_TextureMatrixInverse[v] * vec4(pos, 1.0);
-		vec3 p = ((tpos.xyz / tpos.w) - volumeOrigin[v]) / volumeSize[v];
-		vec4 comps = vec4(volumeDataShift[v]) + 
-			volumeDataScale[v] * texture3D(volume[v], p);
-		for (int i = 0; i < 4; ++i)
-		{
-			int c = v * 4 + i;
-			if (c < MFE_PROPERTYCOUNT) result.v[c] = comps[i];
-		}
+		int c = v * 4 + i;
+		if (c < MFE_PROPERTYCOUNT) result.v[c] = comps[i];
 	}
-
 	return result;
 }
 
-FeatureVector project(FeatureVector x, Transform t, Mask m)
+FeatureVector project(FeatureVector x, Mask m)
 {
 	// Project to original space
 	float x2[MFE_ORIGINALPROPERTYCOUNT];
@@ -102,7 +96,7 @@ FeatureVector project(FeatureVector x, Transform t, Mask m)
 		{
 			for (int j = 0; j < MFE_PROPERTYCOUNT; ++j)
 			{
-				x2[i] += x.v[j] * t.v[i + j * MFE_ORIGINALPROPERTYCOUNT];
+				x2[i] += x.v[j] * dataTransform[i + j * MFE_ORIGINALPROPERTYCOUNT];
 			}
 		}
 	}
@@ -113,7 +107,7 @@ FeatureVector project(FeatureVector x, Transform t, Mask m)
 		result.v[i] = 0.0;
 		for (int j = 0; j < MFE_ORIGINALPROPERTYCOUNT; ++j)
 		{
-			result.v[i] += x2[j] * t.v[j + i * MFE_ORIGINALPROPERTYCOUNT];
+			result.v[i] += x2[j] * dataTransform[j + i * MFE_ORIGINALPROPERTYCOUNT];
 		}
 	}
 	return result;
@@ -148,41 +142,41 @@ float distance(FeatureVector a, FeatureVector b, float power)
 	return pow(sum, 1.0/power);
 }
 
-float getValue(Feature f, FeatureVector fv, Transform t)
+float getValue(Feature f, FeatureVector fv)
 {
 	// Feature vectors are projected, then stretched
 	FeatureVector fv1 = stretch(
-		project(f.example, t, f.definition.mask), 
-		f.bias, f.definition.stretch);
+		project(f.example, userFeatures[f.defId].mask), 
+		f.bias, userFeatures[f.defId].stretch);
 	FeatureVector fv2 = stretch(
-		project(fv, t, f.definition.mask), 
-		f.bias, f.definition.stretch);
+		project(fv, userFeatures[f.defId].mask), 
+		f.bias, userFeatures[f.defId].stretch);
 	// Compute distance
-	return distance(fv1, fv2, f.definition.power);
+	return distance(fv1, fv2, userFeatures[f.defId].power);
 }
 
-float getValue(Feature f, vec3 pos, Transform t)
+float getValue(Feature f, vec3 pos)
 {
 	// Get FeatureVector
 	FeatureVector fv = getFeatureVector(pos);
 	// Compute distance
-	return getValue(f, fv, t);
+	return getValue(f, fv);
 }
 
 // Compute gradient of the volume
-vec3 computeGradient(Feature f, vec3 pos, float delta, float val, Transform t)
+vec3 computeGradient(Feature f, vec3 pos, float delta, float val)
 {
 #ifdef NQVTK_RAYCASTER_CENTRALDIFFERENCES
-	float dx = (getValue(f, pos + vec3(0.5 * delta, 0.0, 0.0), t) - 
-		getValue(f, pos - vec3(0.5 * delta, 0.0, 0.0), t)) / delta;
-	float dy = (getValue(f, pos + vec3(0.0, 0.5 * delta, 0.0), t) - 
-		getValue(f, pos - vec3(0.0, 0.5 * delta, 0.0), t)) / delta;
-	float dz = (getValue(f, pos + vec3(0.0, 0.0, 0.5 * delta), t) - 
-		getValue(f, pos - vec3(0.0, 0.0, 0.5 * delta), t)) / delta;
+	float dx = (getValue(f, pos + vec3(0.5 * delta, 0.0, 0.0)) - 
+		getValue(f, pos - vec3(0.5 * delta, 0.0, 0.0))) / delta;
+	float dy = (getValue(f, pos + vec3(0.0, 0.5 * delta, 0.0)) - 
+		getValue(f, pos - vec3(0.0, 0.5 * delta, 0.0))) / delta;
+	float dz = (getValue(f, pos + vec3(0.0, 0.0, 0.5 * delta)) - 
+		getValue(f, pos - vec3(0.0, 0.0, 0.5 * delta))) / delta;
 #else
-	float dx = (getValue(f, pos + vec3(delta, 0.0, 0.0), t) - val) / delta;
-	float dy = (getValue(f, pos + vec3(0.0, delta, 0.0), t) - val) / delta;
-	float dz = (getValue(f, pos + vec3(0.0, 0.0, delta), t) - val) / delta;
+	float dx = (getValue(f, pos + vec3(delta, 0.0, 0.0)) - val) / delta;
+	float dy = (getValue(f, pos + vec3(0.0, delta, 0.0)) - val) / delta;
+	float dz = (getValue(f, pos + vec3(0.0, 0.0, delta)) - val) / delta;
 #endif
 	return vec3(dx, dy, dz);
 }
@@ -190,16 +184,17 @@ vec3 computeGradient(Feature f, vec3 pos, float delta, float val, Transform t)
 bool isInside(Feature f, float val)
 {
 	// TODO: adjust threshold based on f.delta
-	return val < pow(10.0, f.definition.startThreshold) * f.definition.endThreshold;
+	return val < pow(10.0, userFeatures[f.defId].startThreshold) * 
+		userFeatures[f.defId].endThreshold;
 }
 
-vec3 refineHitpoint(Feature f, vec3 pos, vec3 step, bool insideAtPos, Transform t)
+vec3 refineHitpoint(Feature f, vec3 pos, vec3 step, bool insideAtPos)
 {
 	vec3 s = 0.5 * step;
 	vec3 p = pos - s;
 	// 6 refinements should be enough for now
 	for (int r = 0; r < 6; ++r) {
-		float val = getValue(f, p, t);
+		float val = getValue(f, p);
 		// Halve the step size
 		s *= 0.5;
 		// Step in which direction?
@@ -246,32 +241,28 @@ void main()
 		float stepLength = stepSize;
 		int numSteps = int(ceil(length(ray) / stepSize));
 
-		// Read the transform from texture
-		// TODO: use an uniform instead?
-		Transform t;
-
 		Feature features[MFE_FEATURECOUNT];
 		for (int f = 0; f < MFE_FEATURECOUNT; ++f)
 		{
 			// Copy feature definition
-			if (f < numActiveFeatures)
+			if (f < numActiveFeatures && userFeatures[f].enabled)
 			{
-				features[f].definition = userFeatures[f];
+				features[f].defId = f;
 			}
 			else
 			{
-				features[f].definition.enabled = false;
+				features[f].defId = -1;
 			}
 
 			// Example-based definition of the feature
-			if (features[f].definition.enabled)
+			if (features[f].defId >= 0)
 			{
 				// Compute example
 				features[f].example = 
-					getFeatureVector(features[f].definition.examplePos);
+					getFeatureVector(userFeatures[f].examplePos);
 				// Compute background feature vector
 				FeatureVector bg;
-				if (features[f].definition.biasRelativeToMean)
+				if (userFeatures[f].biasRelativeToMean)
 				{
 					for (int i = 0; i < MFE_PROPERTYCOUNT; ++i)
 					{
@@ -280,7 +271,7 @@ void main()
 				}
 				else
 				{
-					bg = getFeatureVector(features[f].definition.backgroundPos);
+					bg = getFeatureVector(userFeatures[f].backgroundPos);
 				}
 				// Compute bias vector
 				float l = 0.0;
@@ -314,7 +305,7 @@ void main()
 		bool inVolume = getBit(infoBefore.a, 0);
 		for (int f = 0; f < MFE_FEATURECOUNT; ++f)
 		{
-			active[f] = features[f].definition.enabled && inVolume;
+			active[f] = features[f].defId >= 0 && inVolume;
 			insideAtStart[f] = getBit(infoBefore.a, f + fidbase);
 			hit[f] = false;
 			refined[f] = vec3(0.0);
@@ -332,7 +323,7 @@ void main()
 				// If the feature is active, test for intersections
 				if (active[f])
 				{
-					float val = getValue(features[f], fv, t);
+					float val = getValue(features[f], fv);
 					bool insideAtPos = isInside(features[f], val);
 					if (insideAtPos != insideAtStart[f])
 					{
@@ -341,16 +332,16 @@ void main()
 						hitFeature = f;
 						// Refine the hit for this volume
 						refined[f] = refineHitpoint(features[f], pos, 
-							normalStep, insideAtPos, t);
+							normalStep, insideAtPos);
 						// Compute gradient
 						// NOTE: we can't optimize this out, as volume[v] is currently 
 						// only possible for deterministic v (constant or for-loop)
 #ifdef NQVTK_RAYCASTER_CENTRALDIFFERENCES
 						gradient[f] = computeGradient(features[f], refined[f], 
-							kernelSize, 0.0, t);
+							kernelSize, 0.0);
 #else
 						gradient[f] = computeGradient(features[f], refined[f], 
-							kernelSize, getValue(features[f], refined[f]), t);
+							kernelSize, getValue(features[f], refined[f]));
 #endif
 					}
 				}
@@ -389,7 +380,7 @@ void main()
 			id = nearestF + fidbase;
 			info = vec4(refined[nearestF] + normalStep, 
 				setBit(infoBefore.a, id, !insideAtStart[nearestF]));
-			color = vec4(features[nearestF].definition.color, 0.7);
+			color = vec4(userFeatures[nearestF].color, 0.7);
 			normal = gradient[nearestF];
 			if (dot(normal, step) > 0.0) normal = -normal;
 			normal = gl_NormalMatrix * normal;
