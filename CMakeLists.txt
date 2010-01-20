@@ -79,6 +79,7 @@ SET( ${ProjectName}_Gui_Classes
 	FeedbackViewer
 
 	SelectionSliceViewInteractor
+	FeedbackMaskInteractor
 )
 
 SET( ${ProjectName}_Data_Classes

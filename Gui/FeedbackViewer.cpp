@@ -3,6 +3,8 @@
 
 #include "Rendering/FeedbackRenderer.h"
 
+#include "FeedbackMaskInteractor.h"
+
 #include <cassert>
 
 namespace MFE
@@ -12,6 +14,11 @@ namespace MFE
 	{
 		FeedbackRenderer *renderer = new FeedbackRenderer();
 		SetRenderer(renderer);
+
+		FeedbackMaskInteractor *interactor = new FeedbackMaskInteractor();
+		connect(interactor->GetMessenger(), SIGNAL(Updated()), 
+			this, SIGNAL(Updated()));
+		SetInteractor(interactor);
 	}
 	
 	// ------------------------------------------------------------------------
@@ -27,6 +34,8 @@ namespace MFE
 		assert(renderer != 0);
 
 		renderer->SetField(field);
+
+		SetFeature(0);
 	}
 
 	// ------------------------------------------------------------------------
@@ -35,7 +44,11 @@ namespace MFE
 		FeedbackRenderer *renderer = 
 			dynamic_cast<FeedbackRenderer*>(GetRenderer());
 		assert(renderer != 0);
-
 		renderer->SetFeature(feature);
+
+		FeedbackMaskInteractor *interactor = 
+			dynamic_cast<FeedbackMaskInteractor*>(GetInteractor());
+		assert(interactor != 0);
+		interactor->SetFeature(feature);
 	}
 };

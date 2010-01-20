@@ -152,4 +152,11 @@ namespace MFE
 			if (feature->enabled) emit Updated();
 		}
 	}
+
+	// ------------------------------------------------------------------------
+	void FeatureWidget::on_feedbackView_Updated()
+	{
+		// The mask was changed
+		if (feature != 0 && feature->enabled) emit Updated();
+	}
 }

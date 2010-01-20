@@ -18,5 +18,8 @@ namespace MFE
 	public slots:
 		void SetField(Field *field);
 		void SetFeature(Feature *feature);
+
+	signals:
+		void Updated();
 	};
 }

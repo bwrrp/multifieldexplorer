@@ -26,8 +26,6 @@ namespace MFE
 	class SelectionSliceViewInteractor : public NQVTK::SliceViewInteractor
 	{
 	public:
-		typedef SliceViewInteractor Superclass;
-
 		SelectionSliceViewInteractor(NQVTK::SliceRenderer *renderer);
 		virtual ~SelectionSliceViewInteractor();
 
