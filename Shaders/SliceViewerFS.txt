@@ -40,6 +40,9 @@ struct FeatureDefinition
 };
 
 uniform float dataTransform[MFE_PROPERTYCOUNT * MFE_ORIGINALPROPERTYCOUNT];
+uniform float dataMean[MFE_ORIGINALPROPERTYCOUNT];
+uniform float dataMin[MFE_ORIGINALPROPERTYCOUNT];
+uniform float dataMax[MFE_ORIGINALPROPERTYCOUNT];
 uniform FeatureDefinition userFeatures[MFE_FEATURECOUNT];
 uniform int numActiveFeatures;
 
@@ -172,36 +175,23 @@ void main()
 	vec3 pos = gl_TexCoord[0].xyz;
 	FeatureVector fv = getFeatureVector(pos);
 
-	vec4 color;
-
-	/*
-	// Visualize vector field
-	vec3 vector = getVector(fv);
-
-	// Color code direction
-	color = vec4(normalize(vector) + vec3(0.5), 1.0);
-
-	// Smear texture
-	vec3 dir = normalize(vector);
-	vec2 d = dir.xy;
-	int n = 0;
-	float f = 0.0;
-	for (int i = 0; i < 100; ++i)
+	// Project the featurevector to the original space
+	float originalfv[MFE_ORIGINALPROPERTYCOUNT];
+	for (int j = 0; j < MFE_ORIGINALPROPERTYCOUNT; ++j)
 	{
-		vec2 tc = sc + float(i - 25) * d;
-		f += dotTexture(tc);
-		++n;
+		for (int i = 0; i < MFE_PROPERTYCOUNT; ++i)
+		{
+			originalfv[j] += fv.v[i] * 
+				dataTransform[j + i * MFE_ORIGINALPROPERTYCOUNT];
+		}
+		// Values are centered on the mean
+		// Scale values to [-1..1] using min and max
+		float absmax = max(abs(dataMean[j] - dataMin[j]), abs(dataMax[j] - dataMean[j]));
+		originalfv[j] /= absmax;
 	}
-	f /= float(n);
-	color.rgb *= f;
 
-	// Include magnitude
-	float magnitude = length(vector) / (volumeDataScale * 0.5);
-	color.rgb = vec3(0.3) + vec3(0.7 * clamp(magnitude, 0.0, 1.0)) * color.rgb;
-	*/
-
-	// Visualize feature vector
-	color.rgb = vec3(0.3);
+	// Visualize the feature vector
+	vec4 color = vec4(vec3(0.0), 1.0);
 	vec3 colors[8];
 	colors[0] = vec3(1.0, 0.0, 0.0);
 	colors[1] = vec3(0.0, 1.0, 0.0);
@@ -211,12 +201,13 @@ void main()
 	colors[5] = vec3(1.0, 0.0, 0.5);
 	colors[6] = vec3(0.5, 0.0, 1.0);
 	colors[7] = vec3(1.0, 1.0, 1.0);
-	for (int i = 0; i < MFE_PROPERTYCOUNT; ++i)
+	for (int i = 1; i < MFE_ORIGINALPROPERTYCOUNT; ++i)
 	{
-		color.rgb += fv.v[i] * colors[min(i, 7)] * 0.01;
+		color.rgb += mix(vec3(0.0), colors[min(i, 7)], abs(originalfv[i])) / float(MFE_ORIGINALPROPERTYCOUNT);
 	}
+	color.rgb = vec3(0.3) + color.rgb;
 
-	// Visualize features
+	// Set up features
 	Feature features[MFE_FEATURECOUNT];
 	for (int f = 0; f < MFE_FEATURECOUNT; ++f)
 	{
@@ -227,18 +218,57 @@ void main()
 		}
 		else
 		{
-			features[f].defId = -1;
+			// Default to 0 to hopefully hit some cache
+			features[f].defId = 0;
 		}
-		// Compute examples
-		if (features[f].defId >= 0)
+	}
+
+	// Example-based feature definitions
+	for (int f = 0; f < MFE_FEATURECOUNT; ++f)
+	{
+		// Compute example
+		features[f].example = 
+			getFeatureVector(userFeatures[f].examplePos);
+		// Compute background feature vector
+		FeatureVector bg = getFeatureVector(userFeatures[f].backgroundPos);
+		if (userFeatures[f].biasRelativeToMean)
 		{
-			features[f].example = 
-				getFeatureVector(userFeatures[f].examplePos);
-			
+			for (int i = 0; i < MFE_PROPERTYCOUNT; ++i)
+			{
+				bg.v[i] = 0.0;
+			}
+		}
+		// Compute bias vector
+		float l = 0.0;
+		for (int i = 0; i < MFE_PROPERTYCOUNT; ++i)
+		{
+			// Bias towards difference
+			features[f].bias.v[i] = features[f].example.v[i] - bg.v[i];
+			// Compute length
+			l += features[f].bias.v[i] * features[f].bias.v[i];
+		}
+		l = sqrt(l);
+		features[f].delta = l;
+		// Normalize
+		l = 1.0 / l;
+		for (int i = 0; i < MFE_PROPERTYCOUNT; ++i)
+		{
+			features[f].bias.v[i] = features[f].bias.v[i] * l;
+		}
+	}
+
+	// Visualize the features
+	for (int f = 0; f < MFE_FEATURECOUNT; ++f)
+	{
+		if (f < numActiveFeatures && userFeatures[f].enabled)
+		{
 			float value = getValue(features[f], fv);
 			if (isInside(features[f], value))
 			{
-				color.rgb = mix(color.rgb, userFeatures[f].color, 0.7);
+				float bla = 1.0 - (value - userFeatures[f].startThreshold) /
+					(userFeatures[f].endThreshold - 
+						userFeatures[f].startThreshold);
+				color.rgb = mix(color.rgb, (0.2 + 0.8 * bla) * userFeatures[f].color, 0.7);
 				// TODO: contours might be nice
 			}
 		}
