@@ -66,9 +66,11 @@ namespace MFE
 
 		bool res = MouseMoveEvent(event);
 
-		if (event.button == NQVTK::MouseEvent::LeftButton);
-		// Allow a next click to toggle any property
-		lastPid = -1;
+		if (event.button == NQVTK::MouseEvent::LeftButton)
+		{
+			// Allow a next click to toggle any property
+			lastPid = -1;
+		}
 
 		return res;
 	}
