@@ -81,6 +81,7 @@ namespace MFE
 			glDisable(GL_DEPTH_TEST);
 
 			shader->Start();
+			shader->SetUniform1i("viewportHeight", viewportHeight);
 			shader->SetUniform1i("viewportWidth", viewportWidth);
 
 			if(transform) transform->SetupProgram(shader);

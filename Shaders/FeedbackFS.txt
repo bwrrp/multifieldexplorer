@@ -2,6 +2,7 @@
 #extension GL_EXT_gpu_shader4 : enable
 #endif
 
+uniform int viewportHeight;
 uniform int viewportWidth;
 
 uniform sampler3D volume;
@@ -64,14 +65,66 @@ FeatureVector getFeatureVector(vec3 pos)
 	return result;
 }
 
+int getX(float cx)
+{
+	return int(floor(
+		cx * float(MFE_ORIGINALPROPERTYCOUNT) / 
+		float(viewportWidth)));
+}
+
+int getY(float cy)
+{
+	return int(floor(cy * 3.0 / float(20)));
+}
+
 void main()
 {
 	vec2 coord = gl_FragCoord.xy;
-	int x = int(floor(
-		coord.x * float(MFE_ORIGINALPROPERTYCOUNT) / 
-		float(viewportWidth)));
+	int x = getX(coord.x);
+	int y = getY(coord.y);
 
-	FeatureVector fv = getFeatureVector(userFeature.examplePos);
+	// Compute example
+	FeatureVector example = getFeatureVector(userFeature.examplePos);
+	// Compute background feature vector
+	FeatureVector bg = getFeatureVector(userFeature.backgroundPos);
+	if (userFeature.biasRelativeToMean)
+	{
+		for (int i = 0; i < MFE_PROPERTYCOUNT; ++i)
+		{
+			bg.v[i] = 0.0;
+		}
+	}
+	// Compute bias vector
+	FeatureVector bias;
+	float l = 0.0;
+	for (int i = 0; i < MFE_PROPERTYCOUNT; ++i)
+	{
+		// Bias towards difference
+		bias.v[i] = example.v[i] - bg.v[i];
+		// Compute length
+		l += bias.v[i] * bias.v[i];
+	}
+	l = sqrt(l);
+	// Normalize
+	l = 1.0 / l;
+	for (int i = 0; i < MFE_PROPERTYCOUNT; ++i)
+	{
+		bias.v[i] = bias.v[i] * l;
+	}
+
+	FeatureVector fv;
+	if (y == 2)
+	{
+		fv = bg;
+	}
+	else if (y == 1)
+	{
+		fv = example;
+	}
+	else
+	{
+		fv = bias;
+	}
 	// Project the featurevector to the original space
 	float v = 0.0;
 	for (int i = 0; i < MFE_PROPERTYCOUNT; ++i)
@@ -82,10 +135,23 @@ void main()
 	float mean = dataMean[x];
 	v += mean;
 
-	float min = dataMin[x];
-	float max = dataMax[x];
-
-	v = (v - min) / (max - min);
+	if (y > 0)
+	{
+		// Scale relative to min and max for this property
+		float min = dataMin[x];
+		float max = dataMax[x];
+		v = (v - min) / (max - min);
+	}
+	else
+	{
+		// Bias vector is visualized with absolute values
+		v = abs(v);
+	}
 
 	gl_FragColor = vec4(mix(vec3(0.0, 0.5, 1.0), vec3(1.0, 0.5, 0.0), v), 1.0);
+	// Masked properties
+	if (!userFeature.mask.v[x]) gl_FragColor.rgb *= 0.4;
+	// Contours
+	if (x != getX(coord.x + 1) || y != getY(coord.y + 1) || coord.x < 1.0 || coord.y < 1.0)
+		gl_FragColor = vec4(vec3(0.3), 1.0);
 }
