@@ -74,7 +74,7 @@ int getX(float cx)
 
 int getY(float cy)
 {
-	return int(floor(cy * 3.0 / float(20)));
+	return int(floor(cy * 3.0 / float(viewportHeight)));
 }
 
 void main()
@@ -131,24 +131,25 @@ void main()
 	{
 		v += fv.v[i] * dataTransform[x + i * MFE_ORIGINALPROPERTYCOUNT];
 	}
-	// Add the mean
-	float mean = dataMean[x];
-	v += mean;
 
 	if (y > 0)
 	{
-		// Scale relative to min and max for this property
-		float min = dataMin[x];
-		float max = dataMax[x];
-		v = (v - min) / (max - min);
+		// Scale relative to min and max for this property, 
+		// while keeping the mean at 0
+		float absmax = max(abs(dataMean[x] - dataMin[x]), 
+			abs(dataMax[x] - dataMean[x]));
+		v /= absmax;
+		// Now shift to [0..1]
+		v = 0.5 + 0.5 * v;
+		gl_FragColor = vec4(mix(vec3(0.0, 0.5, 1.0), vec3(1.0, 0.5, 0.0), v), 1.0);
 	}
 	else
 	{
 		// Bias vector is visualized with absolute values
 		v = abs(v);
+		gl_FragColor = vec4(mix(vec3(0.0), vec3(1.0), v), 1.0);
 	}
 
-	gl_FragColor = vec4(mix(vec3(0.0, 0.5, 1.0), vec3(1.0, 0.5, 0.0), v), 1.0);
 	// Masked properties
 	if (!userFeature.mask.v[x]) gl_FragColor.rgb *= 0.4;
 	// Contours
