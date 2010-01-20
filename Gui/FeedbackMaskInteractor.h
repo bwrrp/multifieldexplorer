@@ -31,10 +31,13 @@ namespace MFE
 
 		MaskMessenger *GetMessenger() { return messenger; }
 
+		virtual bool MouseMoveEvent(NQVTK::MouseEvent event);
 		virtual bool MouseReleaseEvent(NQVTK::MouseEvent event);
 
 	private:
 		MaskMessenger *messenger;
 		Feature *currentFeature;
+
+		int lastPid;
 	};
 }
