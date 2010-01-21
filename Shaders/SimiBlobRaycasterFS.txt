@@ -116,10 +116,19 @@ FeatureVector project(FeatureVector x, Mask m)
 	*/
 }
 
-FeatureVector stretch(FeatureVector x, FeatureVector v, float s)
+FeatureVector stretch(FeatureVector x, FeatureVector v, float s, Mask m)
 {
-	// Volume-preserving scaling within the reduced feature space
-	float s2 = 1.0 / pow(s, 1.0 / float(MFE_PROPERTYCOUNT));
+	// Volume-preserving scaling with respect to the original feature subspace 
+	// left after the masking projection
+
+	// Compute fraction of dimensionality left from the mask
+	int numDims = 0;
+	for (int i = 0; i < MFE_ORIGINALPROPERTYCOUNT; ++i)
+	{
+		if (m.v[i]) ++numDims;
+	}
+	// Uniformly scale entire space
+	float s2 = 1.0 / pow(s, 1.0 / float(numDims));
 	// Matrix-vector multiplication with the scaling matrix
 	FeatureVector result;
 	for (int i = 0; i < MFE_PROPERTYCOUNT; ++i)
@@ -150,10 +159,12 @@ float getValue(Feature f, FeatureVector fv)
 	// Feature vectors are projected, then stretched
 	FeatureVector fv1 = stretch(
 		project(f.example, userFeatures[f.defId].mask), 
-		f.bias, userFeatures[f.defId].stretch);
+		f.bias, userFeatures[f.defId].stretch, 
+		userFeatures[f.defId].mask);
 	FeatureVector fv2 = stretch(
 		project(fv, userFeatures[f.defId].mask), 
-		f.bias, userFeatures[f.defId].stretch);
+		f.bias, userFeatures[f.defId].stretch, 
+		userFeatures[f.defId].mask);
 	// Compute distance
 	return distance(fv1, fv2, userFeatures[f.defId].power);
 }
@@ -247,7 +258,7 @@ void main()
 		Feature features[MFE_FEATURECOUNT];
 		for (int f = 0; f < MFE_FEATURECOUNT; ++f)
 		{
-			// Copy feature definition
+			// Link to feature definition
 			if (f < numActiveFeatures && userFeatures[f].enabled)
 			{
 				features[f].defId = f;
