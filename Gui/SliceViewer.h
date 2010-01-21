@@ -24,5 +24,6 @@ namespace MFE
 	signals:
 		void CursorPosChanged(NQVTK::Vector3 pos);
 		void PointSelected(NQVTK::Vector3 pos);
+		void AlternatePointSelected(NQVTK::Vector3 pos);
 	};
 }

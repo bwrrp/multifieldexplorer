@@ -48,6 +48,18 @@ namespace MFE
 			if (feature)
 			{
 				// Update widgets
+				ui.biasRelativeToMean->setChecked(feature->biasRelativeToMean);
+				if (feature->biasRelativeToMean)
+				{
+					ui.backgroundPosReadout->setText("Mean value");
+				}
+				else
+				{
+					ui.backgroundPosReadout->setText(QString("<%1, %2, %3>")
+						.arg(feature->backgroundPos.x)
+						.arg(feature->backgroundPos.y)
+						.arg(feature->backgroundPos.z));
+				}
 				ui.enabled->setChecked(feature->enabled);
 				ui.startThreshold->setValue(
 					0.5 + 100.0 * feature->startThreshold);
@@ -66,6 +78,7 @@ namespace MFE
 			}
 			else
 			{
+				ui.examplePosReadout->setText("(no feature selected)");
 				setEnabled(false);
 			}
 		}
@@ -93,6 +106,17 @@ namespace MFE
 	void FeatureWidget::UpdatePropertyWidgets()
 	{
 		ui.feedbackView->updateGL();
+	}
+
+	// ------------------------------------------------------------------------
+	void FeatureWidget::on_biasRelativeToMean_toggled(bool checked)
+	{
+		if (feature)
+		{
+			feature->biasRelativeToMean = checked;
+			UpdateView(feature);
+			emit Updated();
+		}
 	}
 
 	// ------------------------------------------------------------------------

@@ -27,6 +27,8 @@ namespace MFE
 			ui.featureList, SLOT(SetCursorPos(NQVTK::Vector3)));
 		connect(ui.sliceViewer, SIGNAL(PointSelected(NQVTK::Vector3)), 
 			ui.featureList, SLOT(SetSelectedPos(NQVTK::Vector3)));
+		connect(ui.sliceViewer, SIGNAL(AlternatePointSelected(NQVTK::Vector3)), 
+			ui.featureList, SLOT(SetAlternatePos(NQVTK::Vector3)));
 
 		connect(ui.featureList, SIGNAL(FeatureSelected(Feature*)), 
 			ui.featureEditor, SLOT(SetFeature(Feature*)));

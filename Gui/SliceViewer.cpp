@@ -37,6 +37,9 @@ namespace MFE
 		connect(interactor->GetMessenger(), 
 			SIGNAL(PointSelected(NQVTK::Vector3)), 
 			this, SIGNAL(PointSelected(NQVTK::Vector3)));
+		connect(interactor->GetMessenger(), 
+			SIGNAL(AlternatePointSelected(NQVTK::Vector3)), 
+			this, SIGNAL(AlternatePointSelected(NQVTK::Vector3)));
 	}
 
 	// ------------------------------------------------------------------------

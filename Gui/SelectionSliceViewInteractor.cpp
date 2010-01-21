@@ -18,6 +18,13 @@ namespace MFE
 	}
 
 	// ------------------------------------------------------------------------
+	void SelectionMessenger::EmitAlternatePointSelected(
+		const NQVTK::Vector3 &pos)
+	{
+		emit AlternatePointSelected(pos);
+	}
+
+	// ------------------------------------------------------------------------
 	SelectionSliceViewInteractor::SelectionSliceViewInteractor(
 		NQVTK::SliceRenderer *renderer)
 		: NQVTK::SliceViewInteractor(renderer)
@@ -44,7 +51,17 @@ namespace MFE
 		NQVTK::MouseEvent event)
 	{
 		bool res = Superclass::MouseReleaseEvent(event);
-		messenger->EmitPointSelected(Get3DPos(event));
+		if (event.button == NQVTK::MouseEvent::LeftButton)
+		{
+			if (event.shift)
+			{
+				messenger->EmitPointSelected(Get3DPos(event));
+			}
+			else if (event.control)
+			{
+				messenger->EmitAlternatePointSelected(Get3DPos(event));
+			}
+		}
 		return res;
 	}
 

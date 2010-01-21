@@ -23,6 +23,7 @@ namespace MFE
 	public slots:
 		void SetCursorPos(NQVTK::Vector3);
 		void SetSelectedPos(NQVTK::Vector3);
+		void SetAlternatePos(NQVTK::Vector3);
 
 	signals:
 		void FeatureSelected(Feature *feature);

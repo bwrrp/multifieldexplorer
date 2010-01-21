@@ -88,6 +88,21 @@ namespace MFE
 	}
 
 	// ------------------------------------------------------------------------
+	void FeatureList::SetAlternatePos(NQVTK::Vector3 pos)
+	{
+		if (field)
+		{
+			int num = ui.featureList->currentRow();
+			Feature *selectedFeature = field->GetFeature(num);
+			if (selectedFeature)
+			{
+				selectedFeature->backgroundPos = pos;
+				field->EmitFeatureUpdated(num);
+			}
+		}
+	}
+
+	// ------------------------------------------------------------------------
 	void FeatureList::UpdateFeature(int num)
 	{
 		if (!field) return;

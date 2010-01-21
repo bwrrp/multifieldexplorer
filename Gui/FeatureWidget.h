@@ -36,6 +36,7 @@ namespace MFE
 		void UpdatePropertyWidgets();
 
 	private slots:
+		void on_biasRelativeToMean_toggled(bool checked);
 		void on_enabled_toggled(bool checked);
 		void on_startThreshold_valueChanged(int value);
 		void on_endThreshold_valueChanged(int value);
