@@ -214,10 +214,10 @@ vec4 shadeFragment(sample fragment)
 		color.rgb *= (0.5 + 0.5 * minusTexture(fragment.coord));
 	}
 	//*/
-	if (fragment.id > fidbase) color.a = 1.0;
+	//if (fragment.id > fidbase) color.a = 1.0;
 	//if (fragment.id == fidbase + 3) color.a = 0.2;
 
-	//* Test: vector direction visualization
+	/* Test: vector direction visualization
 	if (fragment.id == fidbase + 3 || fragment.id == fidbase + 5)
 	{
 		vec4 tpos = gl_TextureMatrixInverse[0] * vec4(fragment.pos, 1.0);
