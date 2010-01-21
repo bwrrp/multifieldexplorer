@@ -45,9 +45,9 @@ namespace MFE
 		program->SetUniform1f(feature.str() + "power", power);
 		program->SetUniform1f(feature.str() + "stretch", stretch);
 		program->SetUniform3f(feature.str() + "backgroundPos", 
-			static_cast<float>(examplePos.x), 
-			static_cast<float>(examplePos.y), 
-			static_cast<float>(examplePos.z));
+			static_cast<float>(backgroundPos.x), 
+			static_cast<float>(backgroundPos.y), 
+			static_cast<float>(backgroundPos.z));
 		program->SetUniform1i(feature.str() + "biasRelativeToMean", 
 			biasRelativeToMean ? 1 : 0);
 		// Setup mask
