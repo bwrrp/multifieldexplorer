@@ -40,19 +40,28 @@ namespace MFE
 		{
 			// Find the property under the cursor
 			int pid = static_cast<int>(
-				static_cast<double>(event.x * currentFeature->mask.size()) / 
+				static_cast<double>(event.x) * 
+				static_cast<double>(currentFeature->mask.size()) / 
 				static_cast<double>(viewportWidth));
+			// Reset drag when the mouse leaves the viewer
+			if (pid < 0)
+			{
+				lastPid = -1;
+			}
+			else if (pid > static_cast<int>(currentFeature->mask.size()) - 1)
+
+			{
+				lastPid = -1;
+			}
 			// Don't toggle the same property twice
-			if (pid != lastPid)
+			else if (pid != lastPid)
 			{
 				// Toggle the mask
 				currentFeature->mask[pid] = !currentFeature->mask[pid];
+				lastPid = pid;
+				messenger->EmitUpdated();
+				return true;
 			}
-
-			lastPid = pid;
-
-			messenger->EmitUpdated();
-			return true;
 		}
 
 		return false;
