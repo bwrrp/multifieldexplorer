@@ -77,6 +77,22 @@ namespace MFE
 	}
 
 	// ------------------------------------------------------------------------
+	void MainWindow::SaveScreenshot(NQVTKWidget *viewer, 
+		const QString &filename, bool invertAlpha)
+	{
+		//QImage screenshot = viewer->grabFrameBuffer(true);
+		QImage screenshot = viewer->GrabHighRes(6);
+		if (invertAlpha)
+		{
+			// Fix alpha values
+			screenshot.invertPixels(QImage::InvertRgba);
+			screenshot.invertPixels(QImage::InvertRgb);
+		}
+		// Save it
+		screenshot.save(filename, "PNG");
+	}
+
+	// ------------------------------------------------------------------------
 	void MainWindow::on_actionLoad_triggered()
 	{
 		// Show open dialog
@@ -120,14 +136,10 @@ namespace MFE
 	// ------------------------------------------------------------------------
 	void MainWindow::on_actionScreenshot_triggered()
 	{
-		QDateTime now = QDateTime::currentDateTime();
-		QImage screenshot = ui.mainViewer->grabFrameBuffer(true);
-		// Fix alpha values
-		screenshot.invertPixels(QImage::InvertRgba);
-		screenshot.invertPixels(QImage::InvertRgb);
-		// Save it
-		screenshot.save(QString("MFE-%1.png").arg(
-			now.toString("yyMMdd-hhmmss")), "PNG");
+		QString now = QDateTime::currentDateTime().toString("yyMMdd-hhmmss");
+		// Save screenshots of the main and slice viewers
+		SaveScreenshot(ui.mainViewer, QString("MFE-%1-3D.png").arg(now));
+		SaveScreenshot(ui.sliceViewer, QString("MFE-%1-Slice.png").arg(now));
 	}
 
 	// ------------------------------------------------------------------------

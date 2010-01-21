@@ -25,6 +25,9 @@ namespace MFE
 		void RedrawViewers();
 
 	protected:
+		void SaveScreenshot(NQVTKWidget *viewer, const QString &filename, 
+			bool invertAlpha = false);
+
 		Ui::MainWindow ui;
 
 		RenderControls *rcdialog;
