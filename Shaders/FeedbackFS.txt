@@ -30,9 +30,10 @@ struct FeatureDefinition
 	float power;
 	float stretch;
 	vec3 color;
-	Mask mask;
 	vec3 backgroundPos;
 	bool biasRelativeToMean;
+	Mask mask;
+	float dimFrac;
 };
 
 uniform float dataTransform[MFE_PROPERTYCOUNT * MFE_ORIGINALPROPERTYCOUNT];

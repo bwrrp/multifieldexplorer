@@ -34,9 +34,10 @@ struct FeatureDefinition
 	float power;
 	float stretch;
 	vec3 color;
-	Mask mask;
 	vec3 backgroundPos;
 	bool biasRelativeToMean;
+	Mask mask;
+	float dimFrac;
 };
 
 uniform float dataTransform[MFE_PROPERTYCOUNT * MFE_ORIGINALPROPERTYCOUNT];
@@ -98,19 +99,13 @@ FeatureVector project(FeatureVector x, Mask m)
 	return result;
 }
 
-FeatureVector stretch(FeatureVector x, FeatureVector v, float s, Mask m)
+FeatureVector stretch(FeatureVector x, FeatureVector v, float s, float dimFrac)
 {
 	// Volume-preserving scaling with respect to the original feature subspace 
 	// left after the masking projection
 
-	// Compute fraction of dimensionality left from the mask
-	int numDims = 0;
-	for (int i = 0; i < MFE_ORIGINALPROPERTYCOUNT; ++i)
-	{
-		if (m.v[i]) ++numDims;
-	}
 	// Uniformly scale entire space
-	float s2 = 1.0 / pow(s, 1.0 / float(numDims));
+	float s2 = 1.0 / pow(s, dimFrac);
 	// Matrix-vector multiplication with the scaling matrix
 	FeatureVector result;
 	for (int i = 0; i < MFE_PROPERTYCOUNT; ++i)
@@ -139,16 +134,12 @@ float distance(FeatureVector a, FeatureVector b, float power)
 float getValue(Feature f, FeatureVector fv)
 {
 	// Feature vectors are projected, then stretched
-	FeatureVector fv1 = stretch(
-		project(f.example, userFeatures[f.defId].mask), 
-		f.bias, userFeatures[f.defId].stretch, 
-		userFeatures[f.defId].mask);
-	FeatureVector fv2 = stretch(
+	FeatureVector fvt = stretch(
 		project(fv, userFeatures[f.defId].mask), 
 		f.bias, userFeatures[f.defId].stretch, 
-		userFeatures[f.defId].mask);
+		userFeatures[f.defId].dimFrac);
 	// Compute distance
-	return distance(fv1, fv2, userFeatures[f.defId].power);
+	return distance(f.example, fvt, userFeatures[f.defId].power);
 }
 
 float getValue(Feature f, vec3 pos)
@@ -238,34 +229,42 @@ void main()
 			getFeatureVector(userFeatures[f].examplePos);
 		// Compute background feature vector
 		FeatureVector bg = getFeatureVector(userFeatures[f].backgroundPos);
-		if (userFeatures[f].biasRelativeToMean)
+		if (f < numActiveFeatures && userFeatures[f].enabled)
 		{
+			if (userFeatures[f].biasRelativeToMean)
+			{
+				for (int i = 0; i < MFE_PROPERTYCOUNT; ++i)
+				{
+					bg.v[i] = 0.0;
+				}
+			}
+			// Compute bias vector
 			for (int i = 0; i < MFE_PROPERTYCOUNT; ++i)
 			{
-				bg.v[i] = 0.0;
+				// Bias towards difference
+				features[f].bias.v[i] = features[f].example.v[i] - bg.v[i];
 			}
-		}
-		// Compute bias vector
-		for (int i = 0; i < MFE_PROPERTYCOUNT; ++i)
-		{
-			// Bias towards difference
-			features[f].bias.v[i] = features[f].example.v[i] - bg.v[i];
-		}
-		// Project to subspace defined by the mask
-		features[f].bias = project(features[f].bias, userFeatures[f].mask);
-		// Compute length
-		float l = 0.0;
-		for (int i = 0; i < MFE_PROPERTYCOUNT; ++i)
-		{
-			l += features[f].bias.v[i] * features[f].bias.v[i];
-		}
-		l = sqrt(l);
-		features[f].delta = l;
-		// Normalize
-		l = 1.0 / l;
-		for (int i = 0; i < MFE_PROPERTYCOUNT; ++i)
-		{
-			features[f].bias.v[i] = features[f].bias.v[i] * l;
+			// Project to subspace defined by the mask
+			features[f].bias = project(features[f].bias, userFeatures[f].mask);
+			// Compute length
+			float l = 0.0;
+			for (int i = 0; i < MFE_PROPERTYCOUNT; ++i)
+			{
+				l += features[f].bias.v[i] * features[f].bias.v[i];
+			}
+			l = sqrt(l);
+			features[f].delta = l;
+			// Normalize
+			l = 1.0 / l;
+			for (int i = 0; i < MFE_PROPERTYCOUNT; ++i)
+			{
+				features[f].bias.v[i] = features[f].bias.v[i] * l;
+			}
+			// Pre-transform example
+			features[f].example = stretch(
+				project(features[f].example, userFeatures[f].mask), 
+				features[f].bias, userFeatures[f].stretch, 
+				userFeatures[f].dimFrac);
 		}
 	}
 
