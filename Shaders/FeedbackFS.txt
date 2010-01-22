@@ -33,7 +33,7 @@ struct FeatureDefinition
 	vec3 backgroundPos;
 	bool biasRelativeToMean;
 	Mask mask;
-	float dimFrac;
+	int numDims;
 };
 
 uniform float dataTransform[MFE_PROPERTYCOUNT * MFE_ORIGINALPROPERTYCOUNT];

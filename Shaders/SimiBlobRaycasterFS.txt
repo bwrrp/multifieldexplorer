@@ -46,7 +46,7 @@ struct FeatureDefinition
 	vec3 backgroundPos;
 	bool biasRelativeToMean;
 	Mask mask;
-	float dimFrac;
+	int numDims;
 };
 
 uniform float dataTransform[MFE_PROPERTYCOUNT * MFE_ORIGINALPROPERTYCOUNT];
@@ -101,13 +101,20 @@ FeatureVector project(FeatureVector x, Feature f)
 	return result;
 }
 
-FeatureVector stretch(FeatureVector x, FeatureVector v, float s, float dimFrac)
+FeatureVector stretch(FeatureVector x, FeatureVector v, float s, int numDims)
 {
 	// Volume-preserving scaling with respect to the original feature subspace 
 	// left after the masking projection
 
-	// Uniformly scale entire space
-	float s2 = 1.0 / pow(s, dimFrac);
+	// We uniformly scale the entire space, then scale along the vector
+	// First compute the required scaling factors such that s1 * s2 == s
+	float s1 = s;
+	float s2 = 1.0;
+	if (numDims > 1)
+	{
+		s2 = 1.0 / pow(s, 1.0 / float(numDims - 1));
+		s1 = s / s2;
+	}
 	// Matrix-vector multiplication with the scaling matrix
 	FeatureVector result;
 	for (int i = 0; i < MFE_PROPERTYCOUNT; ++i)
@@ -115,7 +122,7 @@ FeatureVector stretch(FeatureVector x, FeatureVector v, float s, float dimFrac)
 		result.v[i] = 0.0;
 		for (int j = 0; j < MFE_PROPERTYCOUNT; ++j)
 		{
-			float Mij = (s - 1.0) * v.v[i] * v.v[j];
+			float Mij = (s1 - 1.0) * v.v[i] * v.v[j];
 			if (i == j) Mij += 1.0;
 			result.v[i] += Mij * s2 * x.v[j];
 		}
@@ -138,7 +145,7 @@ float getValue(Feature f, FeatureVector fv)
 	// Feature vectors are projected, then stretched
 	FeatureVector fvt = stretch(project(fv, f), 
 		f.bias, userFeatures[f.defId].stretch, 
-		userFeatures[f.defId].dimFrac);
+		userFeatures[f.defId].numDims);
 	// Compute distance
 	return distance(f.example, fvt, userFeatures[f.defId].power);
 }
@@ -171,9 +178,22 @@ vec3 computeGradient(Feature f, vec3 pos, float delta, float val)
 
 bool isInside(Feature f, float val)
 {
-	// TODO: adjust threshold based on f.delta
-	return val < pow(10.0, userFeatures[f.defId].startThreshold) * 
-		userFeatures[f.defId].endThreshold;
+	// Adjust thresholding based on f.delta
+	float v = val / f.delta / userFeatures[f.defId].stretch;
+	float start = userFeatures[f.defId].startThreshold;
+	float end = userFeatures[f.defId].endThreshold;
+	bool inside;
+	if (start < end)
+	{
+		// Satisfy both thresholds
+		inside = v >= start && v <= end;
+	}
+	else
+	{
+		// Either threshold will work
+		inside = v >= start || v <= end;
+	}
+	return inside;
 }
 
 vec3 refineHitpoint(Feature f, vec3 pos, vec3 step, bool insideAtPos)
@@ -277,7 +297,7 @@ void main()
 						}
 					}
 				}
-				// Determine bias vector
+				// The mean is at the origin
 				if (userFeatures[f].biasRelativeToMean)
 				{
 					for (int i = 0; i < MFE_PROPERTYCOUNT; ++i)
@@ -285,13 +305,15 @@ void main()
 						bg.v[i] = 0.0;
 					}
 				}
+				// Project the feature vectors to the subspace defined by the mask
+				features[f].example = project(features[f].example, features[f]);
+				bg = project(bg, features[f]);
+				// Compute the bias vector
 				for (int i = 0; i < MFE_PROPERTYCOUNT; ++i)
 				{
 					// Bias towards difference
 					features[f].bias.v[i] = features[f].example.v[i] - bg.v[i];
 				}
-				// Project to subspace defined by the mask
-				features[f].bias = project(features[f].bias, features[f]);
 				// Compute length
 				float l = 0.0;
 				for (int i = 0; i < MFE_PROPERTYCOUNT; ++i)
@@ -306,11 +328,10 @@ void main()
 				{
 					features[f].bias.v[i] = features[f].bias.v[i] * l;
 				}
-				// Pre-transform example
-				features[f].example = stretch(
-					project(features[f].example, features[f]), 
+				// Pre-stretch example
+				features[f].example = stretch(features[f].example,
 					features[f].bias, userFeatures[f].stretch, 
-					userFeatures[f].dimFrac);
+					userFeatures[f].numDims);
 			}
 		}
 

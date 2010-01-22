@@ -59,9 +59,8 @@ namespace MFE
 			program->SetUniform1i(mname.str(), mask[i] ? 1 : 0);
 			if (mask[i]) ++numDims;
 		}
-		// Fraction of dimensionality left by the mask
-		program->SetUniform1f(feature.str() + "dimFrac", 
-			1.0 / static_cast<float>(numDims));
+		// Number of dimensions left by the mask
+		program->SetUniform1i(feature.str() + "numDims", numDims);
 
 		program->SetUniform3f(feature.str() + "color", 
 			static_cast<float>(color.x), 
