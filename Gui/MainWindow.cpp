@@ -138,7 +138,7 @@ namespace MFE
 	{
 		QString now = QDateTime::currentDateTime().toString("yyMMdd-hhmmss");
 		// Save screenshots of the main and slice viewers
-		SaveScreenshot(ui.mainViewer, QString("MFE-%1-3D.png").arg(now));
+		SaveScreenshot(ui.mainViewer, QString("MFE-%1-3D.png").arg(now), true);
 		SaveScreenshot(ui.sliceViewer, QString("MFE-%1-Slice.png").arg(now));
 	}
 
