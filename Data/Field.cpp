@@ -59,6 +59,7 @@ namespace PropertySpace
 		// Build data matrix
 		BuildPropertyMatrix(volume);
 		CenterData();
+		AutoScale();
 	}
 
 	// ------------------------------------------------------------------------
@@ -123,15 +124,18 @@ namespace PropertySpace
 	// ------------------------------------------------------------------------
 	void Field::Transform()
 	{
-		// The transformation matrix is based on scaled eigenvectors
+		// The transformation matrix is based on the eigenvectors
 		std::cout << "Buiding transformation..." << std::endl;
 		basis = eigVecs;
+		/*
+		// Post-transform scaling disabled for now...
 		for (int i = 0; i < basis.cols(); ++i)
 		{
 			itpp::vec v = basis.get_col(i);
 			v *= 1.0 / sqrt(eigVals(i));
 			basis.set_col(i, v);
 		}
+		*/
 
 		std::cout << "Transforming data..." << std::endl;
 		data = data * basis;
@@ -275,6 +279,30 @@ namespace PropertySpace
 		for (int i = 0; i < data.rows(); ++i)
 		{
 			data.set_row(i, data.get_row(i) - mean);
+		}
+	}
+
+	// ------------------------------------------------------------------------
+	void Field::AutoScale()
+	{
+		// Perform autoscaling, assuming the data has been centered on the mean
+		// Compute the standard deviations for each dimension (i.e. column)
+		itpp::vec stdev(data.cols());
+		for (int i = 0; i < data.cols(); ++i)
+		{
+			// Standard deviation is the sqare root of the variance
+			stdev(i) = std::sqrt(itpp::variance(data.get_col(i)));
+		}
+		// Scale the data to unit variance
+		for (int i = 0; i < data.rows(); ++i)
+		{
+			// Elementwise division
+			itpp::vec row = data.get_row(i);
+			for (int j = 0; j < row.size(); ++j)
+			{
+				row(j) /= stdev(j);
+			}
+			data.set_row(i, row);
 		}
 	}
 

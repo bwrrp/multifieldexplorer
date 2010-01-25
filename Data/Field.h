@@ -45,6 +45,8 @@ namespace PropertySpace
 
 		void CenterData();
 
+		void AutoScale();
+
 		void SaveDataTransform(const std::string &filename, int comps, 
 			std::ofstream &descFile);
 	};
