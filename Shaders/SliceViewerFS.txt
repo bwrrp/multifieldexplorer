@@ -185,8 +185,9 @@ void main()
 		}
 		// Values are centered on the mean
 		// Scale values to [-1..1] using min and max
-		float absmax = max(abs(dataMean[j] - dataMin[j]), abs(dataMax[j] - dataMean[j]));
-		originalfv[j] /= absmax;
+		//float absmax = max(abs(dataMean[j] - dataMin[j]), abs(dataMax[j] - dataMean[j]));
+		//originalfv[j] /= absmax;
+		originalfv[j] /= 3.0;
 	}
 
 	// Visualize the feature vector
@@ -204,7 +205,7 @@ void main()
 	{
 		color.rgb += mix(vec3(0.0), colors[min(i, 7)], abs(originalfv[i])) / float(MFE_ORIGINALPROPERTYCOUNT);
 	}
-	color.rgb = vec3(0.3) + color.rgb;
+	color.rgb = vec3(0.3) + 0.7 * color.rgb;
 
 	// Set up features
 	Feature features[MFE_FEATURECOUNT];

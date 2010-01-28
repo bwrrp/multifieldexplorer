@@ -137,9 +137,10 @@ void main()
 	{
 		// Scale relative to min and max for this property, 
 		// while keeping the mean at 0
-		float absmax = max(abs(dataMean[x] - dataMin[x]), 
-			abs(dataMax[x] - dataMean[x]));
-		v /= absmax;
+		//float absmax = max(abs(dataMean[x] - dataMin[x]), 
+		//	abs(dataMax[x] - dataMean[x]));
+		//v /= absmax;
+		v /= 3.0;
 		// Now shift to [0..1]
 		v = 0.5 + 0.5 * v;
 		gl_FragColor = vec4(mix(vec3(0.0, 0.5, 1.0), vec3(1.0, 0.5, 0.0), v), 1.0);
